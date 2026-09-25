@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BioAudit — Create Account</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+    :root {
+      --bg: #05060a;
+      --bg-panel: #14161c;
+      --orange: #ff5e3a;
+      --cyan: #4de3d1;
+      --text: #e8f3e6;
+      --text-dim: #9aa0a6;
+      --border: #2a2d35;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: var(--bg-panel);
+      border: 2px solid var(--orange);
+      border-radius: 12px;
+      padding: 36px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 8px 0;
+    }
+
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .row > div { flex: 1; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 10px 2px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    input:focus {
+      outline: none;
+      border-bottom-color: var(--cyan);
+    }
+
+    input::placeholder { color: var(--text-dim); }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      font-size: 0.85rem;
+    }
+
+    .radio-option input { width: auto; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .checkbox-row input { width: auto; margin-top: 3px; }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 24px;
+      border: none;
+      border-radius: 6px;
+      background: var(--orange);
+      color: #14161c;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    button:hover { opacity: 0.85; }
+
+    #message {
+      color: var(--orange);
+      font-size: 0.8rem;
+      margin-top: 14px;
+      min-height: 1em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Create Account</h1>
+    <p class="subtitle">Please provide your personal information to create your new account.</p>
+
+    <form id="signup-form">
+      <label>Name *</label>
+      <input type="text" id="fullName" required />
+
+      <label>Email address *</label>
+      <input type="email" id="email" required />
+
+      <label>Password *</label>
+      <input type="password" id="password" placeholder="Min 6 characters" required />
+
+      <label>Confirm password *</label>
+      <input type="password" id="confirmPassword" placeholder="Re-enter password" required />
+
+      <label>Subscription type *</label>
+      <div class="radio-option">
+        <input type="radio" name="subscription" id="sub-student" value="student" checked />
+        <label for="sub-student" style="margin:0;font-weight:400;">Student (S$0/month)</label>
+      </div>
+      <div class="radio-option">
+        <input type="radio" name="subscription" id="sub-org" value="organisation" />
+        <label for="sub-org" style="margin:0;font-weight:400;">Organisation ($200/month)</label>
+      </div>
+
+      <div id="org-name-field" style="display:none;">
+        <label>Organisation Name *</label>
+        <input type="text" id="organisationName" placeholder="Give your organisation a name" />
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="terms" required />
+        <label for="terms" style="margin:0;">I agree to the subscription terms and conditions. *</label>
+      </div>
+
+      <button type="submit">Create account</button>
+      <p id="message"></p>
+    </form>
+  </div>
+
+  <!-- Load config FIRST -->
+  <script src="firebase-config.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const app = initializeApp(window.firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const form = document.getElementById("signup-form");
+    const messageEl = document.getElementById("message");
+    const orgNameField = document.getElementById("org-name-field");
+    const orgNameInput = document.getElementById("organisationName");
+
+    // Show/hide organisation name field based on subscription choice
+    document.querySelectorAll('input[name="subscription"]').forEach((radio) => {
+      radio.addEventListener("change", () => {
+        const isOrg = document.querySelector('input[name="subscription"]:checked').value === "organisation";
+        orgNameField.style.display = isOrg ? "block" : "none";
+        orgNameInput.required = isOrg;
+      });
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      messageEl.textContent = "";
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const subscription = document.querySelector('input[name="subscription"]:checked').value;
+      const isOrganisation = subscription === "organisation";
+      const organisationName = isOrganisation ? orgNameInput.value.trim() : null;
+
+      if (password !== confirmPassword) {
+        messageEl.textContent = "Passwords do not match.";
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+
+        await setDoc(doc(db, "users", uid), {
+          displayName: fullName,
+          email,
+          organisationId: null,
+          organisationName: organisationName,
+          role: isOrganisation ? "admin" : "member",
+          scanCount: 0,
+          subscription: {
+            status: "none",
+            startedAt: null,
+            cancelledAt: null
+          },
+          tier: isOrganisation ? "organisation" : "free",
+          disabled: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        // Redirect to main page (or a download/welcome page) after successful signup
+        window.location.href = "index.html";
+
+      } catch (err) {
+        messageEl.textContent = err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>
