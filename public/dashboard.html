@@ -142,6 +142,8 @@
     .banner[hidden] { display: none; }
     .banner.warn { border-color: var(--warn); background: rgba(244, 178, 62, 0.08); }
     .banner.bad { border-color: var(--bad); background: rgba(255, 108, 63, 0.1); }
+    .banner.good { border-color: var(--good); background: rgba(127, 216, 164, 0.08); }
+    .checkout-error { margin-top: 12px; min-height: 1.2em; font-size: 0.85rem; color: var(--orange); }
 
     /* Download card */
     .download { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
@@ -282,7 +284,11 @@
 
         <div class="banner" id="expiry-banner" hidden>
           <span id="expiry-banner-text"></span>
-          <a class="btn btn-small" href="plans.html">View plans</a>
+          <button class="btn btn-small" type="button" id="banner-action">View plans</button>
+        </div>
+
+        <div class="banner good" id="notice" hidden>
+          <span id="notice-text"></span>
         </div>
 
         <div class="grid grid-4">
@@ -380,9 +386,10 @@
           <div class="dates"><span id="sub-start"></span><span id="sub-end"></span></div>
 
           <p id="sub-message" style="margin-top: 22px; line-height: 1.55; font-size: 0.95rem"></p>
+          <p class="checkout-error" id="sub-error" role="alert"></p>
 
           <div style="margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap">
-            <a class="btn" href="plans.html" id="sub-action">Renew plan</a>
+            <button class="btn" type="button" id="sub-action">Upgrade to Organisation</button>
             <a class="btn btn-ghost" href="plans.html">Compare plans</a>
           </div>
         </div>
@@ -409,13 +416,14 @@
     import {
       getFirestore,
       doc,
-      getDoc,
+      onSnapshot,
       collection,
       query,
       where,
       limit,
       getDocs
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { startCheckout } from "./checkout.js";
 
     const app = initializeApp(window.firebaseConfig);
     const auth = getAuth(app);
@@ -469,6 +477,31 @@
       const tier = (profile.tier || "").toLowerCase();
       return (tier === "organisation" || tier === "premium") ? "organisation" : "student";
     }
+    // Chose Organisation at sign-up but hasn't paid yet
+    function isPending() {
+      return planKey() === "student" && profile.requestedPlan === "organisation";
+    }
+
+    /* ===== Stripe checkout ===== */
+    let checkingOut = false;
+    async function goToCheckout(btn) {
+      if (checkingOut) return;
+      checkingOut = true;
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Opening checkout…";
+      $("sub-error").textContent = "";
+      try {
+        await startCheckout(db, currentUser.uid);
+      } catch (err) {
+        console.error(err);
+        $("sub-error").textContent = err.message || "Couldn't open checkout. Please try again.";
+        if (btn.id === "banner-action") $("expiry-banner-text").textContent = err.message || "Couldn't open checkout.";
+        btn.disabled = false;
+        btn.textContent = label;
+        checkingOut = false;
+      }
+    }
     function planDates() {
       const start =
         toDate(profile.subscription && profile.subscription.startedAt) ||
@@ -489,6 +522,7 @@
     }
 
     function renderPlan() {
+      if (isPending()) { renderPending(); return; }
       const key = planKey();
       const plan = PLANS[key];
       const { start, end, daysLeft, usedPct } = planDates();
@@ -520,6 +554,9 @@
       } else {
         banner.hidden = true;
       }
+      const bannerBtn = $("banner-action");
+      bannerBtn.textContent = key === "student" ? "Upgrade to Organisation" : "View plans";
+      bannerBtn.onclick = key === "student" ? () => goToCheckout(bannerBtn) : () => { location.href = "plans.html"; };
 
       // Subscription tab
       $("sub-name").textContent = plan.name;
@@ -536,14 +573,50 @@
         msg = expired
           ? "Your 12 months of free student access ended on " + fmtDate(end) + "."
           : "You have " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + " of free student access left. It ends on " + fmtDate(end) + ".";
-        $("sub-action").textContent = expired ? "Choose a plan" : "Upgrade to Organisation";
+        $("sub-action").textContent = "Upgrade to Organisation";
+        $("sub-action").hidden = false;
+        $("sub-action").onclick = () => goToCheckout($("sub-action"));
       } else {
         msg = expired
           ? "Your plan expired on " + fmtDate(end) + ". Renew it to keep using BioAudit."
-          : "Your plan is paid up for another " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + ". You'll need to renew by " + fmtDate(end) + " to keep access.";
-        $("sub-action").textContent = "Renew plan";
+          : "Your plan is paid up for another " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + ". It renews automatically on " + fmtDate(end) + ".";
+        $("sub-action").hidden = true;
       }
       $("sub-message").textContent = msg;
+
+      const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
+      $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
+    }
+
+    function renderPending() {
+      const plan = PLANS.organisation;
+      $("ov-plan").textContent = plan.name;
+      $("ov-plan-note").textContent = "Payment pending";
+      $("ov-days").textContent = "–";
+      $("ov-days-note").textContent = "Starts once payment is complete";
+
+      const banner = $("expiry-banner");
+      // Just back from paying: the "activating" notice covers it, so don't also ask them to pay
+      banner.hidden = checkoutResult === "success";
+      banner.className = "banner warn";
+      $("expiry-banner-text").textContent = "Your Organisation plan isn't active yet. Complete your payment to activate it.";
+      const bannerBtn = $("banner-action");
+      bannerBtn.textContent = "Complete payment";
+      bannerBtn.onclick = () => goToCheckout(bannerBtn);
+
+      $("sub-name").textContent = plan.name;
+      $("sub-price").textContent = plan.price;
+      const badge = $("sub-badge");
+      badge.textContent = "Payment pending";
+      badge.className = "badge warn";
+      $("sub-bar").style.width = "0%";
+      $("sub-start").textContent = "";
+      $("sub-end").textContent = "";
+      $("sub-message").textContent = "You chose the Organisation plan when you signed up. Complete your payment to activate it. Until then, your account works like a Student account.";
+      const action = $("sub-action");
+      action.hidden = false;
+      action.textContent = "Complete payment";
+      action.onclick = () => goToCheckout(action);
 
       const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
       $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
@@ -556,7 +629,7 @@
       $("who").textContent = currentUser.email || "";
       $("ac-name").textContent = name || "–";
       $("ac-email").textContent = currentUser.email || profile.email || "–";
-      $("ac-plan").textContent = PLANS[planKey()].name;
+      $("ac-plan").textContent = isPending() ? "Organisation (payment pending)" : PLANS[planKey()].name;
       $("ac-since").textContent = fmtDate(toDate(profile.createdAt) || new Date(currentUser.metadata.creationTime));
       if (profile.organisationName) {
         $("ac-org-wrap").hidden = false;
@@ -712,28 +785,50 @@
       window.location.href = "login.html";
     });
 
+    /* ===== Message after returning from Stripe ===== */
+    const checkoutResult = new URLSearchParams(location.search).get("checkout");
+    function showCheckoutNotice() {
+      const box = $("notice");
+      if (checkoutResult === "success") {
+        box.hidden = false;
+        box.className = "banner " + (planKey() === "organisation" ? "good" : "warn");
+        $("notice-text").textContent = planKey() === "organisation"
+          ? "Payment received. Your Organisation plan is active. Sign in to the BioAudit app again to use it there."
+          : "Payment received. Activating your Organisation plan… this usually takes a few seconds.";
+      } else if (checkoutResult === "cancelled") {
+        box.hidden = false;
+        box.className = "banner warn";
+        $("notice-text").textContent = "Checkout was cancelled, so nothing was charged. You can try again any time.";
+      }
+    }
+
     /* ===== Start ===== */
-    onAuthStateChanged(auth, async (user) => {
+    let started = false;
+    onAuthStateChanged(auth, (user) => {
       if (!user) {
         window.location.href = "login.html";
         return;
       }
       currentUser = user;
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        profile = snap.exists() ? snap.data() : {};
-      } catch (err) {
-        console.error("Could not load profile:", err);
-        profile = {};
-      }
-      renderProfile();
-      renderPlan();
-      await loadScans();
 
-      $("loading").hidden = true;
-      $("app").hidden = false;
-      const start = location.hash.replace("#", "");
-      showTab(tabs.includes(start) ? start : "overview");
+      // Live: the page updates by itself when the plan changes (e.g. after payment)
+      onSnapshot(doc(db, "users", user.uid), async (snap) => {
+        profile = snap.exists() ? snap.data() : {};
+        renderProfile();
+        renderPlan();
+        showCheckoutNotice();
+
+        if (!started) {
+          started = true;
+          await loadScans();
+          $("loading").hidden = true;
+          $("app").hidden = false;
+          const start = location.hash.replace("#", "");
+          showTab(tabs.includes(start) ? start : "overview");
+        }
+      }, (err) => {
+        console.error("Could not load profile:", err);
+      });
     });
   </script>
 

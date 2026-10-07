@@ -260,6 +260,7 @@
       setDoc,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { startCheckout } from "./checkout.js";
 
     const app = initializeApp(window.firebaseConfig);
     const auth = getAuth(app);
@@ -284,7 +285,7 @@
       messageEl.textContent = "";
 
       const fullName = document.getElementById("fullName").value.trim();
-      const email = document.getElementById("email").value.trim();
+      const email = document.getElementById("email").value.trim().toLowerCase();
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
       const subscription = document.querySelector('input[name="subscription"]:checked').value;
@@ -305,20 +306,32 @@
           email,
           organisationId: null,
           organisationName: organisationName,
-          role: isOrganisation ? "admin" : "member",
+          role: "member",
           scanCount: 0,
           subscription: {
             status: "none",
             startedAt: null,
             cancelledAt: null
           },
-          tier: isOrganisation ? "organisation" : "free",
+          tier: "free",
+          requestedPlan: isOrganisation ? "organisation" : "student",
           disabled: false,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
 
-        // New accounts are signed in straight away, so go to the dashboard
+        // Organisation: go and pay. The account is upgraded by the server once
+        // Stripe confirms payment. If checkout can't open, the dashboard offers
+        // a "Complete payment" button instead.
+        if (isOrganisation) {
+          messageEl.textContent = "Account created. Opening checkout…";
+          try {
+            await startCheckout(db, uid);
+            return;
+          } catch (checkoutErr) {
+            console.error(checkoutErr);
+          }
+        }
         window.location.href = "dashboard.html";
 
       } catch (err) {
