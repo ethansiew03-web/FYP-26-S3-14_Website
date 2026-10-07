@@ -3,181 +3,247 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BioAudit — Create Account</title>
+  <title>Create Account | BioAudit</title>
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
-
+    /* Same colours as the rest of the site */
     :root {
-      --bg: #05060a;
-      --bg-panel: #14161c;
-      --orange: #ff5e3a;
-      --cyan: #4de3d1;
-      --text: #e8f3e6;
-      --text-dim: #9aa0a6;
-      --border: #2a2d35;
+      --black: #000000;
+      --mint: #EDFCEB;
+      --orange: #FF6C3F;
+      --line: #505050;
+      --dim: #A9B3A9;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; }
 
     body {
-      font-family: 'IBM Plex Mono', monospace;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
+      font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      background: var(--black);
+      color: var(--mint);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Looping star video behind everything */
+    .bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+
+    /* Logo back to the homepage */
+    .top {
+      position: relative;
+      z-index: 1;
+      padding: 28px clamp(20px, 4vw, 64px);
+    }
+    .top img { display: block; width: 96px; height: 96px; }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 20px 20px 80px;
     }
 
     .card {
-      background: var(--bg-panel);
-      border: 2px solid var(--orange);
-      border-radius: 12px;
-      padding: 36px;
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
+      padding: 44px 40px 40px;
+      background: rgba(10, 12, 16, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--orange);
+      border-radius: 10px;
     }
 
     h1 {
-      font-size: 1.5rem;
-      margin: 0 0 8px 0;
+      font-weight: 400;
+      font-size: 1.9rem;
+      line-height: 1.2;
+    }
+    .lead {
+      margin-top: 10px;
+      color: var(--dim);
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
 
-    .subtitle {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      margin-bottom: 24px;
-      line-height: 1.4;
-    }
-
-    label {
+    label.field {
       display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      margin-top: 16px;
+      margin-top: 22px;
+      font-size: 0.85rem;
     }
-
-    .row {
-      display: flex;
-      gap: 16px;
-    }
-
-    .row > div { flex: 1; }
-
     input[type="text"],
     input[type="email"],
-    input[type="password"],
-    input[type="tel"] {
+    input[type="password"] {
+      display: block;
       width: 100%;
-      padding: 10px 2px;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
+      margin-top: 8px;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--mint);
       font-family: inherit;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
+    input::placeholder { color: #7d877d; }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus { outline: none; border-color: var(--orange); }
 
-    input:focus {
-      outline: none;
-      border-bottom-color: var(--cyan);
+    /* Subscription choice */
+    fieldset {
+      border: 0;
+      padding: 0;
+      margin-top: 22px;
     }
-
-    input::placeholder { color: var(--text-dim); }
-
-    .radio-option {
+    legend { font-size: 0.85rem; padding: 0; }
+    .plans {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .plan-option {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
-      margin: 10px 0;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.5);
+      cursor: pointer;
       font-size: 0.85rem;
+      line-height: 1.4;
     }
-
-    .radio-option input { width: auto; }
+    .plan-option:has(input:checked) { border-color: var(--orange); }
+    .plan-option input { margin-top: 3px; accent-color: var(--orange); }
+    .plan-option .price { display: block; color: var(--dim); font-size: 0.8rem; }
 
     .checkbox-row {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      margin-top: 20px;
-      font-size: 0.8rem;
-      color: var(--text-dim);
+      margin-top: 22px;
+      font-size: 0.85rem;
+      color: var(--dim);
+      line-height: 1.4;
     }
+    .checkbox-row input { margin-top: 3px; accent-color: var(--orange); }
 
-    .checkbox-row input { width: auto; margin-top: 3px; }
-
-    button {
+    .btn {
+      display: block;
       width: 100%;
-      padding: 14px;
-      margin-top: 24px;
-      border: none;
-      border-radius: 6px;
+      margin-top: 28px;
+      padding: 13px;
       background: var(--orange);
-      color: #14161c;
+      color: #000;
+      border: 0;
+      border-radius: 6px;
       font-family: inherit;
-      font-weight: 700;
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
+      font-size: 1rem;
       cursor: pointer;
-      transition: opacity 0.15s ease;
     }
+    .btn:hover { filter: brightness(1.08); }
 
-    button:hover { opacity: 0.85; }
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--orange);
+      outline-offset: 3px;
+    }
 
     #message {
-      color: var(--orange);
-      font-size: 0.8rem;
       margin-top: 14px;
-      min-height: 1em;
+      min-height: 1.2em;
+      font-size: 0.85rem;
+      color: var(--orange);
+    }
+
+    .switch {
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: var(--dim);
+      text-align: center;
+    }
+    .switch a { color: var(--mint); }
+
+    @media (max-width: 480px) {
+      .card { padding: 32px 22px; }
+      .plans { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>Create Account</h1>
-    <p class="subtitle">Please provide your personal information to create your new account.</p>
+  <video class="bg-video" autoplay muted loop playsinline poster="assets/bg-stars.jpg" aria-hidden="true">
+    <source src="assets/bg-stars.mp4" type="video/mp4">
+  </video>
 
-    <form id="signup-form">
-      <label>Name *</label>
-      <input type="text" id="fullName" required />
+  <header class="top">
+    <a href="index.html"><img src="assets/favicon.png" alt="BioAudit home"></a>
+  </header>
 
-      <label>Email address *</label>
-      <input type="email" id="email" required />
+  <main class="wrap">
+    <div class="card">
+      <h1>Create account</h1>
+      <p class="lead">Please provide your personal information to create your new account.</p>
 
-      <label>Password *</label>
-      <input type="password" id="password" placeholder="Min 6 characters" required />
+      <form id="signup-form">
+        <label class="field" for="fullName">Name *</label>
+        <input type="text" id="fullName" autocomplete="name" required />
 
-      <label>Confirm password *</label>
-      <input type="password" id="confirmPassword" placeholder="Re-enter password" required />
+        <label class="field" for="email">Email address *</label>
+        <input type="email" id="email" autocomplete="email" required />
 
-      <label>Subscription type *</label>
-      <div class="radio-option">
-        <input type="radio" name="subscription" id="sub-student" value="student" checked />
-        <label for="sub-student" style="margin:0;font-weight:400;">Student (S$0/month)</label>
-      </div>
-      <div class="radio-option">
-        <input type="radio" name="subscription" id="sub-org" value="organisation" />
-        <label for="sub-org" style="margin:0;font-weight:400;">Organisation ($200/month)</label>
-      </div>
+        <label class="field" for="password">Password *</label>
+        <input type="password" id="password" placeholder="At least 6 characters" autocomplete="new-password" required />
 
-      <div id="org-name-field" style="display:none;">
-        <label>Organisation Name *</label>
-        <input type="text" id="organisationName" placeholder="Give your organisation a name" />
-      </div>
+        <label class="field" for="confirmPassword">Confirm password *</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required />
 
-      <div class="checkbox-row">
-        <input type="checkbox" id="terms" required />
-        <label for="terms" style="margin:0;">I agree to the subscription terms and conditions. *</label>
-      </div>
+        <fieldset>
+          <legend>Subscription type *</legend>
+          <div class="plans">
+            <label class="plan-option" for="sub-student">
+              <input type="radio" name="subscription" id="sub-student" value="student" checked />
+              <span>Student<span class="price">$0, valid for 12 months</span></span>
+            </label>
+            <label class="plan-option" for="sub-org">
+              <input type="radio" name="subscription" id="sub-org" value="organisation" />
+              <span>Organisation<span class="price">$34.99/year</span></span>
+            </label>
+          </div>
+        </fieldset>
 
-      <button type="submit">Create account</button>
-      <p id="message"></p>
-    </form>
-  </div>
+        <div id="org-name-field" style="display:none;">
+          <label class="field" for="organisationName">Organisation name *</label>
+          <input type="text" id="organisationName" placeholder="Give your organisation a name" />
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="terms" required />
+          <label for="terms">I agree to the subscription terms and conditions. *</label>
+        </div>
+
+        <button class="btn" type="submit">Create account</button>
+        <p id="message" role="status"></p>
+
+        <p class="switch">Already have an account? <a href="login.html">Log in</a></p>
+      </form>
+    </div>
+  </main>
 
   <!-- Load config FIRST -->
   <script src="firebase-config.js"></script>
@@ -252,8 +318,8 @@
           updatedAt: serverTimestamp()
         });
 
-        // Redirect to main page (or a download/welcome page) after successful signup
-        window.location.href = "index.html";
+        // New accounts are signed in straight away, so go to the dashboard
+        window.location.href = "dashboard.html";
 
       } catch (err) {
         messageEl.textContent = err.message;

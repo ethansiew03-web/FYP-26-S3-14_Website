@@ -3,26 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BioAudit</title>
+<title>Learn More | BioAudit</title>
 <link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* ===== Colours (sampled from the Wix site) ===== */
+  /* ===== Colours (same as the homepage) ===== */
   :root {
     --black: #000000;
     --navy: #000812;
     --mint: #EDFCEB;
     --orange: #FF6C3F;
     --line: #505050;
-    --card: #474A44;
-    --card-edge: #6A6D66;
-    --header-h: 168px;
+    --header-h: 216px;
   }
 
   * { box-sizing: border-box; margin: 0; }
-  html { scroll-behavior: smooth; }
   body {
     background: var(--black);
     color: var(--mint);
@@ -44,7 +41,7 @@
   }
   main, footer { position: relative; z-index: 1; }
 
-  /* ===== Header (stays at the top while scrolling) ===== */
+  /* ===== Header (same as the homepage) ===== */
   .site-header {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -57,7 +54,7 @@
     gap: 24px;
     padding: 28px clamp(20px, 4vw, 64px);
   }
-  .logo img { display: block; width: 132px; height: 132px; }
+  .logo img { display: block; width: 160px; height: 160px; }
   .site-header nav { display: flex; align-items: center; gap: 28px; }
   .site-header nav ul {
     display: flex;
@@ -90,85 +87,47 @@
   }
   .btn:hover { filter: brightness(1.08); }
 
-  /* ===== Hero ===== */
-  .hero {
-    min-height: 100vh;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: calc(var(--header-h) + 40px) clamp(20px, 5vw, 96px) 80px;
+  /* ===== Page intro ===== */
+  .intro {
+    padding: calc(var(--header-h) + 80px) clamp(20px, 5vw, 96px) 56px;
   }
-  .hero h1 {
-    font-weight: 400;
-    text-transform: uppercase;
-    font-size: clamp(2.4rem, 6vw, 5.4rem);
-    line-height: 1.05;
-    max-width: 12ch;
-  }
-  .hero p {
-    margin-top: 24px;
-    font-size: 1.2rem;
-    line-height: 1.5;
-    max-width: 30ch;
+  .intro h1 {
+    font-weight: 300;
+    font-size: clamp(2.2rem, 4.6vw, 4.2rem);
+    line-height: 1.1;
+    text-align: center;
   }
 
-  /* ===== Features: "Rules Decide. AI Explains." ===== */
-  .features {
-    display: grid;
-    grid-template-columns: 1fr minmax(0, 700px);
-    gap: 48px;
-    align-items: center;
-    padding: 120px clamp(20px, 5vw, 96px) 160px;
-  }
-  .features h2 {
-    font-weight: 300;
-    font-size: clamp(2.2rem, 4.6vw, 4.4rem);
-    line-height: 1.1;
-  }
+  /* ===== Feature cards ===== */
   .cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px;
+    padding: 0 clamp(20px, 5vw, 96px) 160px;
   }
   .card {
-    background: var(--card);
-    border: 1px solid var(--card-edge);
+    background: rgba(88, 90, 90, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(237, 252, 235, 0.18);
     border-radius: 8px;
-    padding: 36px 32px 44px;
+    padding: 30px 30px 48px;
+    min-height: 540px;
   }
-  .cards .card:nth-child(even) { transform: translateY(40px); }
-  .card svg { width: 56px; height: 56px; stroke: var(--mint); fill: none; stroke-width: 1.5; }
-  .card h3 {
-    font-weight: 300;
-    font-size: clamp(1.4rem, 2vw, 1.85rem);
-    line-height: 1.2;
-    margin: 28px 0 32px;
+  .card svg {
+    width: 60px; height: 60px;
+    stroke: var(--mint); fill: none;
+    stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
   }
-  .card p { font-size: 1rem; line-height: 1.35; }
-
-  /* ===== Detection section ===== */
-  .detection {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 48px;
-    padding: 160px clamp(20px, 5vw, 96px) 200px;
-  }
-  .detection h2 {
+  .card h2 {
     font-weight: 400;
-    font-size: clamp(1.8rem, 3.2vw, 3rem);
-    line-height: 1.15;
+    font-size: clamp(1.5rem, 2vw, 1.9rem);
+    line-height: 1.25;
+    margin: 32px 0 40px;
   }
-  .detection .side p {
-    font-size: 1.05rem;
-    line-height: 1.5;
-    max-width: 46ch;
-    padding-left: 26px;
-    border-left: 2px solid var(--orange);
-  }
-  .detection .side .btn { margin-top: 72px; }
+  .card p { font-size: 1.05rem; line-height: 1.4; }
 
-  /* ===== Footer ===== */
+  /* ===== Footer (same as the homepage) ===== */
   footer {
     background: var(--black);
     display: grid;
@@ -214,21 +173,18 @@
   .mailing .consent input { width: 16px; height: 16px; accent-color: var(--orange); }
   .mailing .btn { margin-top: 24px; width: 100%; max-width: 256px; padding: 10px; font-size: 0.95rem; }
   .mailing .form-msg { margin-top: 12px; min-height: 1.2em; font-size: 0.85rem; color: var(--orange); }
-  .copyright {
-    grid-column: 1 / -1;
-    margin-top: 48px;
-    font-size: 0.8rem;
-    color: #9aa49a;
-  }
+  .copyright { grid-column: 1 / -1; margin-top: 48px; font-size: 0.8rem; color: #9aa49a; }
 
-  /* ===== Fade-in on scroll (like the Wix cards) ===== */
+  /* ===== Fade-in on scroll ===== */
   .reveal { opacity: 0; transition: opacity 0.9s ease, translate 0.9s ease; translate: 0 24px; }
   .reveal.in { opacity: 1; translate: 0 0; }
 
   /* ===== Tablet & phone ===== */
+  @media (max-width: 1100px) {
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card { min-height: 0; }
+  }
   @media (max-width: 960px) {
-    .features, .detection { grid-template-columns: 1fr; }
-    .detection .side .btn { margin-top: 40px; }
     footer { grid-template-columns: 1fr; }
   }
   @media (max-width: 760px) {
@@ -237,11 +193,9 @@
     .site-header { padding: 20px; }
     .site-header nav ul { display: none; }
     .cards { grid-template-columns: 1fr; }
-    .cards .card:nth-child(even) { transform: none; }
     footer .logo img { width: 160px; height: 160px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
     .reveal { opacity: 1; translate: none; transition: none; }
   }
 </style>
@@ -251,11 +205,9 @@
 <canvas id="bg" aria-hidden="true"></canvas>
 
 <header class="site-header">
-  <!-- Put your logo image in the public folder as logo.png -->
   <a class="logo" href="index.html"><img src="assets/logo.png" alt="BioAudit home"></a>
   <nav>
     <ul>
-      <!-- Change "#" to about.html / pricing.html once those pages exist -->
       <li><a href="about.html">About</a></li>
       <li><a href="plans.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
@@ -265,78 +217,63 @@
 </header>
 
 <main>
-  <!-- ===== Hero ===== -->
-  <section class="hero">
-    <h1>Is your biometric login as secure as it looks?</h1>
-    <p>Find the security gaps hiding behind it with BioAudit.</p>
+  <section class="intro">
+    <!-- Change or remove this heading if the Wix page had a different one -->
+    <h1 class="reveal">Addtional Features</h1>
   </section>
 
-  <!-- ===== Features ===== -->
-  <section class="features" id="features">
-    <h2 class="reveal">Rules Decide.<br>AI Explains.</h2>
+  <section class="cards">
+    <article class="card reveal">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <rect x="2" y="2" width="56" height="56" rx="9"/>
+        <path d="M20 37 h-2 a8 8 0 0 1 -1 -15.9 a11 11 0 0 1 21.5 -2 a8.5 8.5 0 0 1 2.5 17.9 h-1"/>
+        <path d="M30 27 v17 M25 39 l5 5 l5 -5"/>
+      </svg>
+      <h2>View your history anywhere</h2>
+      <p>Scan results are saved to your account, not your PC, so your history follows you to any machine you sign in on.</p>
+    </article>
 
-    <div class="cards">
-      <article class="card reveal">
-        <svg viewBox="0 0 56 56" aria-hidden="true">
-          <path d="M4 28 C14 14, 42 14, 52 28 C42 42, 14 42, 4 28 Z"/>
-          <circle cx="28" cy="28" r="8"/>
-        </svg>
-        <h3>Black-Box Vulnerability Scanning</h3>
-        <p>Tests any Android app the way a real attacker would from the outside. No source code or root access required.</p>
-      </article>
+    <article class="card reveal">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <rect x="2" y="2" width="56" height="56" rx="9"/>
+        <rect x="21" y="21" width="18" height="18" rx="3"/>
+        <path d="M26 21v-6M30 21v-6M34 21v-6M26 45v-6M30 45v-6M34 45v-6M21 26h-6M21 30h-6M21 34h-6M45 26h-6M45 30h-6M45 34h-6"/>
+      </svg>
+      <h2>Manage your team</h2>
+      <p>Bring your whole team under one organisation. Admins can invite members to join, and every member's scan results are saved to the shared account, so the admin has a full view of the team's testing in one place.</p>
+    </article>
 
-      <article class="card reveal">
-        <svg viewBox="0 0 56 56" aria-hidden="true">
-          <rect x="4" y="4" width="48" height="48" rx="8"/>
-          <rect x="19" y="19" width="18" height="18" rx="2"/>
-          <path d="M24 19v-5M32 19v-5M24 42v-5M32 42v-5M19 24h-5M19 32h-5M42 24h-5M42 32h-5"/>
-        </svg>
-        <h3>Authentication Bypass Detection</h3>
-        <p>Checks whether biometric-protected screens can be reached without ever unlocking, exposing gates that only look secure.</p>
-      </article>
+    <article class="card reveal">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <rect x="2" y="2" width="56" height="56" rx="9"/>
+        <circle cx="30" cy="30" r="4"/>
+        <circle cx="30" cy="18" r="4"/><circle cx="30" cy="42" r="4"/>
+        <circle cx="19.6" cy="24" r="4"/><circle cx="40.4" cy="24" r="4"/>
+        <circle cx="19.6" cy="36" r="4"/><circle cx="40.4" cy="36" r="4"/>
+      </svg>
+      <h2>Export your scan reports</h2>
+      <p>Turn any scan into a clean HTML or PDF report. Findings, severity levels and suggested fixes are laid out clearly, so the report is ready to share with your team, attach to a ticket, or include in project documentation.</p>
+    </article>
 
-      <article class="card reveal">
-        <svg viewBox="0 0 56 56" aria-hidden="true">
-          <rect x="4" y="4" width="48" height="48" rx="8"/>
-          <circle cx="28" cy="28" r="3"/>
-          <ellipse cx="28" cy="28" rx="15" ry="6"/>
-          <ellipse cx="28" cy="28" rx="15" ry="6" transform="rotate(60 28 28)"/>
-          <ellipse cx="28" cy="28" rx="15" ry="6" transform="rotate(120 28 28)"/>
-        </svg>
-        <h3>Side-Channel Leak Detection</h3>
-        <p>Detects response differences and leaked secrets in logs that can let an attacker guess valid users or extract tokens.</p>
-      </article>
-
-      <article class="card reveal">
-        <svg viewBox="0 0 56 56" aria-hidden="true">
-          <path d="M14 4h20l10 10v38H14z"/>
-          <path d="M34 4v10h10"/>
-          <path d="M21 42v-8M28 42v-14M35 42v-11"/>
-        </svg>
-        <h3>AI-Explained, Rule-Based Reporting</h3>
-        <p>Every finding is confirmed by deterministic rules and then explained in plain language with a concrete fix. Can be exported as a shareable report.</p>
-      </article>
-    </div>
-  </section>
-
-  <!-- ===== Detection ===== -->
-  <section class="detection">
-    <h2 class="reveal">Thorough Detection.<br>Practical Recommendations.</h2>
-    <div class="side reveal">
-      <p>Biometric login can look secure without being secure. See exactly where yours fails, no root or source code required.</p>
-      <!-- Change "#" to about.html once that page exists -->
-      <a class="btn" href="learn-more.html">Learn More</a>
-    </div>
+    <article class="card reveal">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <rect x="2" y="2" width="56" height="56" rx="9"/>
+        <rect x="11" y="13" width="38" height="34"/>
+        <path d="M11 41 L20 28 L27 35 L35 22 L42 30 L49 19"/>
+        <path d="M20 47 V28 M27 47 V35 M35 47 V22 M42 47 V30"/>
+      </svg>
+      <h2>Spot the difference</h2>
+      <p>Put two scans of the same app side by side to see what changed. You can quickly check which issues were fixed, which are still there, and whether any new ones appeared after an update.</p>
+    </article>
   </section>
 </main>
 
-<!-- ===== Footer ===== -->
 <footer>
   <div>
     <a class="logo" href="index.html"><img src="assets/favicon.png" alt="BioAudit home"></a>
     <ul>
       <li><a href="about.html">About</a></li>
-      <li><a href="about.html">Plans</a></li>
+      <li><a href="plans.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
     </ul>
   </div>
@@ -358,8 +295,7 @@
 </footer>
 
 <script>
-/* ===== Mailing list form =====
-   Checks the fields only. It does NOT save emails anywhere yet. */
+/* ===== Mailing list form (checks fields only, does NOT save yet) ===== */
 document.getElementById("mailing-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const email = document.getElementById("mail-email");
@@ -376,11 +312,10 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll(".reveal").forEach(el => io.observe(el));
 
-/* ===== Background: particle field that gives way to a planet horizon as you scroll ===== */
+/* ===== Background: the same drifting particle field as the homepage ===== */
 (function () {
   const canvas = document.getElementById("bg");
   const ctx = canvas.getContext("2d");
-  const features = document.getElementById("features");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let seed = 321;
@@ -392,12 +327,9 @@ document.querySelectorAll(".reveal").forEach(el => io.observe(el));
   }
   const between = (a, b) => a + rand() * (b - a);
   const clamp01 = v => Math.max(0, Math.min(1, v));
-  const smooth = (a, b, v) => { const t = clamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
 
-  // ---- Settings you can tweak ----
   const DEPTH = 60, SPREAD = 45, SPEED = 1.6, HORIZON = 0.42;
 
-  // ---- Build the particle field ----
   const pts = [];
   const add = (x, y, z) => pts.push({ x, y, z, b: between(0.5, 1), tw: rand() * Math.PI * 2 });
   for (let c = 0; c < 55; c++) {
@@ -428,14 +360,13 @@ document.querySelectorAll(".reveal").forEach(el => io.observe(el));
     focal = Math.max(W, H * 1.2) * 0.55;
   }
 
-  // How far the features section has travelled through the screen (0 to 1)
-  function scrollProgress() {
-    const r = features.getBoundingClientRect();
-    return clamp01((H - r.top) / (r.height + H));
-  }
+  function draw(time, camZ) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    const navy = ctx.createLinearGradient(0, 0, 0, H);
+    navy.addColorStop(0.35, "rgba(0,8,18,0)"); navy.addColorStop(1, "#000812");
+    ctx.fillStyle = navy; ctx.fillRect(0, 0, W, H);
 
-  function drawParticles(time, camZ, alpha) {
-    if (alpha <= 0) return;
     const camX = Math.sin(time * 0.04) * 5, horizonY = H * HORIZON;
     for (const p of pts) {
       const z = ((p.z - camZ) % DEPTH + DEPTH) % DEPTH;
@@ -446,67 +377,17 @@ document.querySelectorAll(".reveal").forEach(el => io.observe(el));
       const far = clamp01((DEPTH - z) / 28), near = clamp01((z - 0.8) / 3);
       const twinkle = 0.8 + 0.2 * Math.sin(time * 1.5 + p.tw);
       const size = Math.min(10, Math.max(2.6, 55 / z));
-      ctx.globalAlpha = alpha * p.b * far * near * twinkle;
+      ctx.globalAlpha = p.b * far * near * twinkle;
       ctx.drawImage(sprite, sx - size / 2, sy - size / 2, size, size);
     }
     ctx.globalAlpha = 1;
   }
 
-  function drawPlanet(reveal, rise) {
-    if (reveal <= 0) return;
-    ctx.globalAlpha = reveal;
-
-    // Hazy grey-blue sky
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, "#5E6B78"); sky.addColorStop(0.5, "#7C8692"); sky.addColorStop(1, "#4A535D");
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-
-    // Huge planet: its edge peaks off the left and slopes down to the right
-    const R = W * 2.4;
-    const cx = -W * 0.25;
-    const edgeY = H * (1.15 - 0.85 * rise);     // where the top of the curve sits
-    const cy = edgeY + R;
-
-    const rims = [["rgba(225,230,235,0.35)", 34], ["rgba(150,158,168,0.55)", 20], ["rgba(95,102,112,0.8)", 9]];
-    for (const [col, off] of rims) {
-      ctx.fillStyle = col;
-      ctx.beginPath(); ctx.arc(cx, cy, R + off, 0, Math.PI * 2); ctx.fill();
-    }
-    const body = ctx.createLinearGradient(0, edgeY, 0, edgeY + H * 0.9);
-    body.addColorStop(0, "#4B525B"); body.addColorStop(0.35, "#262B32"); body.addColorStop(1, "#05070A");
-    ctx.fillStyle = body;
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
-
-    // Dark shadow sweeping in from the bottom-left
-    const shade = ctx.createRadialGradient(0, H, 0, 0, H, Math.max(W, H) * 0.9);
-    shade.addColorStop(0, "rgba(0,0,0,0.85)"); shade.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = shade; ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-  }
-
-  function draw(time, camZ) {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
-    const navy = ctx.createLinearGradient(0, 0, 0, H);
-    navy.addColorStop(0.35, "rgba(0,8,18,0)"); navy.addColorStop(1, "#000812");
-    ctx.fillStyle = navy; ctx.fillRect(0, 0, W, H);
-
-    const f = scrollProgress();
-    const particles = 1 - smooth(0.08, 0.3, f);
-    const planet = smooth(0.0, 0.25, f) * (1 - smooth(0.6, 0.85, f));
-    const rise = smooth(0.0, 0.55, f);
-
-    drawParticles(time, camZ, particles);
-    drawPlanet(planet, rise);
-  }
-
   layout();
 
   if (reduceMotion) {
-    const still = () => draw(0, 0);
-    window.addEventListener("scroll", still, { passive: true });
-    window.addEventListener("resize", () => { layout(); still(); });
-    still();
+    draw(0, 0);
+    window.addEventListener("resize", () => { layout(); draw(0, 0); });
     return;
   }
 

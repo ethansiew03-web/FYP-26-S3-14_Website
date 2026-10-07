@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | BioAudit</title>
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Colours (same as the rest of the site) ===== */
+    :root {
+      --black: #000000;
+      --panel: #0D1015;
+      --panel-2: #141820;
+      --mint: #EDFCEB;
+      --orange: #FF6C3F;
+      --line: #2C3038;
+      --line-2: #505050;
+      --dim: #A9B3A9;
+      --good: #7FD8A4;
+      --warn: #F4B23E;
+      --bad: #FF6C3F;
+      /* Severity colours */
+      --critical: #FF4D4D;
+      --high: #FF8A3D;
+      --medium: #F4B23E;
+      --low: #7FB8FF;
+      --info: #A9B3A9;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      background: radial-gradient(90% 60% at 70% 0%, #0A1622 0%, var(--black) 60%) fixed, var(--black);
+      color: var(--mint);
+      min-height: 100vh;
+    }
+    a { color: var(--mint); }
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--orange);
+      outline-offset: 3px;
+    }
+
+    /* ===== Top bar ===== */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px clamp(20px, 4vw, 48px);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .topbar .brand img { width: 44px; height: 44px; display: block; }
+    .topbar .brand span { font-size: 1.05rem; letter-spacing: 0.06em; }
+    .topbar .right { display: flex; align-items: center; gap: 20px; font-size: 0.9rem; }
+    .topbar .who { color: var(--dim); }
+
+    /* ===== Buttons ===== */
+    .btn {
+      display: inline-block;
+      background: var(--orange);
+      color: #000;
+      border: 0;
+      border-radius: 6px;
+      padding: 11px 20px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn[disabled] { opacity: 0.5; cursor: default; filter: none; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--mint);
+      border: 1px solid var(--line-2);
+    }
+    .btn-ghost:hover { border-color: var(--mint); filter: none; }
+    .btn-small { padding: 7px 14px; font-size: 0.82rem; }
+
+    /* ===== Layout ===== */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 40px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px clamp(20px, 4vw, 48px) 80px;
+    }
+    .tabs { display: flex; flex-direction: column; gap: 6px; }
+    .tab {
+      text-align: left;
+      background: transparent;
+      color: var(--dim);
+      border: 0;
+      border-left: 2px solid transparent;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .tab:hover { color: var(--mint); }
+    .tab[aria-selected="true"] { color: var(--mint); border-left-color: var(--orange); background: var(--panel); }
+
+    .panel-section[hidden] { display: none; }
+    h1 { font-weight: 400; font-size: clamp(1.7rem, 3vw, 2.4rem); line-height: 1.15; }
+    h2 { font-weight: 400; font-size: 1.25rem; }
+    .muted { color: var(--dim); }
+    .section-intro { margin-top: 8px; color: var(--dim); font-size: 0.92rem; line-height: 1.5; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 24px;
+    }
+    .grid { display: grid; gap: 20px; margin-top: 28px; }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .stat .label { color: var(--dim); font-size: 0.88rem; }
+    .stat .value { font-size: 1.35rem; margin-top: 10px; line-height: 1.2; overflow-wrap: break-word; }
+    .stat .note { color: var(--dim); font-size: 0.88rem; margin-top: 8px; line-height: 1.4; }
+
+    /* Expiry banner */
+    .banner {
+      margin-top: 24px;
+      padding: 16px 20px;
+      border-radius: 8px;
+      border: 1px solid;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .banner[hidden] { display: none; }
+    .banner.warn { border-color: var(--warn); background: rgba(244, 178, 62, 0.08); }
+    .banner.bad { border-color: var(--bad); background: rgba(255, 108, 63, 0.1); }
+
+    /* Download card */
+    .download { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .download p { color: var(--dim); font-size: 0.88rem; margin-top: 8px; line-height: 1.5; max-width: 56ch; }
+
+    /* Severity chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line-2);
+      white-space: nowrap;
+    }
+    .chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    /* Reports table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; border: 1px solid var(--line); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 760px; }
+    th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { color: var(--dim); font-weight: 400; font-size: 0.8rem; background: var(--panel); }
+    tr:last-child td { border-bottom: 0; }
+    tr.selected td { background: var(--panel-2); }
+    .empty { padding: 40px 24px; text-align: center; color: var(--dim); line-height: 1.6; }
+
+    /* Report detail */
+    .detail { margin-top: 28px; }
+    .detail[hidden] { display: none; }
+    .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 18px; font-size: 0.85rem; }
+    .meta div span { display: block; color: var(--dim); font-size: 0.75rem; margin-bottom: 4px; }
+    .finding { border-top: 1px solid var(--line); padding: 18px 0; }
+    .finding:first-of-type { margin-top: 18px; }
+    .finding h3 { font-weight: 500; font-size: 1rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .finding p { margin-top: 10px; font-size: 0.88rem; line-height: 1.55; }
+    .finding .label { color: var(--dim); }
+    .finding pre {
+      margin-top: 10px;
+      padding: 12px;
+      background: #07090C;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    /* Account details */
+    .details dl { display: grid; gap: 0; }
+    .details dl > div {
+      display: grid;
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .details dl > div:last-child { border-bottom: 0; }
+    .details dl > div[hidden] { display: none; }
+    .details dt { color: var(--dim); font-size: 0.85rem; }
+    .details dd { margin: 0; font-size: 0.95rem; overflow-wrap: anywhere; }
+
+    /* Subscription */
+    .plan-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+    .plan-name { font-size: 1.6rem; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+    .badge.good { color: var(--good); border-color: var(--good); }
+    .badge.warn { color: var(--warn); border-color: var(--warn); }
+    .badge.bad { color: var(--bad); border-color: var(--bad); }
+    .progress { margin-top: 22px; height: 8px; background: #07090C; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .progress div { height: 100%; background: var(--orange); width: 0; }
+    .dates { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8rem; color: var(--dim); gap: 12px; }
+    .features { list-style: none; padding: 0; margin-top: 16px; }
+    .features li { display: flex; gap: 10px; font-size: 0.88rem; line-height: 1.4; }
+    .features li + li { margin-top: 10px; }
+    .features svg { flex: none; width: 16px; height: 16px; margin-top: 2px; stroke: var(--orange); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* Loading screen */
+    #loading { padding: 120px 20px; text-align: center; color: var(--dim); }
+    #app[hidden], #loading[hidden] { display: none; }
+
+    @media (max-width: 1000px) {
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; gap: 24px; }
+      .tabs { flex-direction: row; overflow-x: auto; gap: 4px; }
+      .tab { border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; }
+      .tab[aria-selected="true"] { border-bottom-color: var(--orange); }
+      .grid-2 { grid-template-columns: 1fr; }
+      .details dl > div { grid-template-columns: 1fr; gap: 4px; }
+      .topbar .who { display: none; }
+    }
+    @media (max-width: 520px) {
+      .grid-4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="brand" href="index.html"><img src="assets/favicon.png" alt=""><span>BIOAUDIT</span></a>
+    <div class="right">
+      <span class="who" id="who"></span>
+      <button class="btn btn-ghost btn-small" type="button" id="signout-btn">Sign out</button>
+    </div>
+  </header>
+
+  <p id="loading">Loading your dashboard…</p>
+
+  <div class="layout" id="app" hidden>
+
+    <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+      <button class="tab" role="tab" id="tab-overview" aria-controls="sec-overview" aria-selected="true">Overview</button>
+      <button class="tab" role="tab" id="tab-reports" aria-controls="sec-reports" aria-selected="false">Reports</button>
+      <button class="tab" role="tab" id="tab-account" aria-controls="sec-account" aria-selected="false">Account</button>
+      <button class="tab" role="tab" id="tab-subscription" aria-controls="sec-subscription" aria-selected="false">Subscription</button>
+    </nav>
+
+    <main>
+
+      <!-- ===== Overview ===== -->
+      <section class="panel-section" id="sec-overview" role="tabpanel" aria-labelledby="tab-overview">
+        <h1 id="welcome">Welcome back</h1>
+        <p class="section-intro">Here's a quick look at your account and recent scans.</p>
+
+        <div class="banner" id="expiry-banner" hidden>
+          <span id="expiry-banner-text"></span>
+          <a class="btn btn-small" href="plans.html">View plans</a>
+        </div>
+
+        <div class="grid grid-4">
+          <div class="card stat">
+            <div class="label">Plan</div>
+            <div class="value" id="ov-plan">–</div>
+            <div class="note" id="ov-plan-note"></div>
+          </div>
+          <div class="card stat">
+            <div class="label">Time left</div>
+            <div class="value" id="ov-days">–</div>
+            <div class="note" id="ov-days-note"></div>
+          </div>
+          <div class="card stat">
+            <div class="label">Scans saved</div>
+            <div class="value" id="ov-scans">–</div>
+            <div class="note" id="ov-scans-note"></div>
+          </div>
+          <div class="card stat">
+            <div class="label">Latest scan</div>
+            <div class="value" id="ov-latest" style="font-size: 1.1rem">–</div>
+            <div class="note" id="ov-latest-note"></div>
+          </div>
+        </div>
+
+        <div class="card download" style="margin-top: 20px">
+          <div>
+            <h2>Download BioAudit</h2>
+            <p>Run scans with the desktop app for Windows. Sign in to the app with the same email and password, and your results will show up under Reports.</p>
+          </div>
+          <a class="btn" href="https://github.com/NasDoctorFish/Final_Year_Project/releases/download/v1.0.6/BioAudit.exe" download>Download for Windows</a>
+        </div>
+
+        <div class="card" style="margin-top: 20px">
+          <h2>Latest scan findings</h2>
+          <div id="ov-latest-findings" style="margin-top: 16px"></div>
+        </div>
+      </section>
+
+      <!-- ===== Reports ===== -->
+      <section class="panel-section" id="sec-reports" role="tabpanel" aria-labelledby="tab-reports" hidden>
+        <h1>Reports</h1>
+        <p class="section-intro">Every scan you run in the BioAudit app is saved here. Select a scan to see its findings, or save it as a report.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>App</th>
+                <th>Type</th>
+                <th>Findings</th>
+                <th><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="scan-rows"></tbody>
+          </table>
+        </div>
+
+        <div class="card detail" id="scan-detail" hidden></div>
+      </section>
+
+      <!-- ===== Account ===== -->
+      <section class="panel-section" id="sec-account" role="tabpanel" aria-labelledby="tab-account" hidden>
+        <h1>Account</h1>
+        <p class="section-intro">Your account details. To change them, open the BioAudit app and go to your account settings.</p>
+
+        <div class="card details" style="margin-top: 28px">
+          <dl>
+            <div><dt>Name</dt><dd id="ac-name">–</dd></div>
+            <div><dt>Email address</dt><dd id="ac-email">–</dd></div>
+            <div id="ac-org-wrap" hidden><dt>Organisation</dt><dd id="ac-org">–</dd></div>
+            <div><dt>Plan</dt><dd id="ac-plan">–</dd></div>
+            <div><dt>Member since</dt><dd id="ac-since">–</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- ===== Subscription ===== -->
+      <section class="panel-section" id="sec-subscription" role="tabpanel" aria-labelledby="tab-subscription" hidden>
+        <h1>Subscription</h1>
+        <p class="section-intro">Your current plan and how long it lasts.</p>
+
+        <div class="card" style="margin-top: 28px">
+          <div class="plan-head">
+            <div>
+              <div class="muted" style="font-size: 0.8rem">Current plan</div>
+              <div class="plan-name" id="sub-name" style="margin-top: 6px">–</div>
+              <div class="muted" id="sub-price" style="margin-top: 6px; font-size: 0.9rem"></div>
+            </div>
+            <span class="badge" id="sub-badge"></span>
+          </div>
+
+          <div class="progress" aria-hidden="true"><div id="sub-bar"></div></div>
+          <div class="dates"><span id="sub-start"></span><span id="sub-end"></span></div>
+
+          <p id="sub-message" style="margin-top: 22px; line-height: 1.55; font-size: 0.95rem"></p>
+
+          <div style="margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap">
+            <a class="btn" href="plans.html" id="sub-action">Renew plan</a>
+            <a class="btn btn-ghost" href="plans.html">Compare plans</a>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px">
+          <h2>What's included</h2>
+          <ul class="features" id="sub-features"></ul>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Load config FIRST -->
+  <script src="firebase-config.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      where,
+      limit,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const app = initializeApp(window.firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    /* ===== Settings ===== */
+    const PLAN_LENGTH_MONTHS = 12;   // both plans last a year
+    const WARN_DAYS = 30;            // start warning this many days before the end
+    const PLANS = {
+      student: { name: "Student", price: "$0, valid for 12 months" },
+      organisation: { name: "Organisation", price: "$34.99/year" }
+    };
+    const FEATURES = [
+      "Black-box scanning of any Android app, no source code or root access needed",
+      "Authentication bypass detection",
+      "Side-channel leak detection",
+      "Plain-language explanations with a concrete fix for every finding",
+      "Export scan reports as HTML or PDF",
+      "Compare two scans side by side",
+      "Scan history saved to your account",
+      "Team management for organisations"
+    ];
+    const SEVERITIES = ["critical", "high", "medium", "low", "info"];
+
+    /* ===== Small helpers ===== */
+    const $ = (id) => document.getElementById(id);
+    const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const toDate = (v) => (v && typeof v.toDate === "function") ? v.toDate() : (v ? new Date(v) : null);
+    const fmtDate = (d) => d ? d.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }) : "–";
+    const fmtDateTime = (d) => d ? d.toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }) : "–";
+    const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+
+    let currentUser = null;
+    let profile = {};
+    let scans = [];
+
+    /* ===== Tabs ===== */
+    const tabs = ["overview", "reports", "account", "subscription"];
+    function showTab(name) {
+      tabs.forEach((t) => {
+        const selected = t === name;
+        $("tab-" + t).setAttribute("aria-selected", String(selected));
+        $("sec-" + t).hidden = !selected;
+      });
+      history.replaceState(null, "", "#" + name);
+    }
+    tabs.forEach((t) => $("tab-" + t).addEventListener("click", () => showTab(t)));
+
+    /* ===== Plan and time left ===== */
+    function planKey() {
+      const tier = (profile.tier || "").toLowerCase();
+      return (tier === "organisation" || tier === "premium") ? "organisation" : "student";
+    }
+    function planDates() {
+      const start =
+        toDate(profile.subscription && profile.subscription.startedAt) ||
+        toDate(profile.createdAt) ||
+        (currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime) : new Date());
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + PLAN_LENGTH_MONTHS);
+      const daysLeft = Math.ceil((end - new Date()) / 86400000);
+      const total = (end - start) / 86400000;
+      const usedPct = Math.min(100, Math.max(0, ((total - Math.max(daysLeft, 0)) / total) * 100));
+      return { start, end, daysLeft, usedPct };
+    }
+    function daysText(n) {
+      if (n <= 0) return "Expired";
+      if (n === 1) return "1 day";
+      if (n < 60) return n + " days";
+      return Math.floor(n / 30) + " months";
+    }
+
+    function renderPlan() {
+      const key = planKey();
+      const plan = PLANS[key];
+      const { start, end, daysLeft, usedPct } = planDates();
+      const expired = daysLeft <= 0;
+      const soon = !expired && daysLeft <= WARN_DAYS;
+
+      // Overview cards
+      $("ov-plan").textContent = plan.name;
+      $("ov-plan-note").textContent = plan.price;
+      $("ov-days").textContent = daysText(daysLeft);
+      $("ov-days-note").textContent = expired
+        ? (key === "student" ? "Ended " : "Expired ") + fmtDate(end)
+        : (key === "student" ? "Free access ends " : "Renews ") + fmtDate(end);
+
+      // Warning banner
+      const banner = $("expiry-banner");
+      if (expired || soon) {
+        banner.hidden = false;
+        banner.className = "banner " + (expired ? "bad" : "warn");
+        if (key === "student") {
+          $("expiry-banner-text").textContent = expired
+            ? "Your free student access ended on " + fmtDate(end) + ". Choose a plan to keep using BioAudit."
+            : "Your free student access ends in " + daysText(daysLeft) + ", on " + fmtDate(end) + ".";
+        } else {
+          $("expiry-banner-text").textContent = expired
+            ? "Your Organisation plan expired on " + fmtDate(end) + ". Renew to keep using BioAudit."
+            : "Your Organisation plan is due for renewal in " + daysText(daysLeft) + ", on " + fmtDate(end) + ".";
+        }
+      } else {
+        banner.hidden = true;
+      }
+
+      // Subscription tab
+      $("sub-name").textContent = plan.name;
+      $("sub-price").textContent = plan.price;
+      const badge = $("sub-badge");
+      badge.textContent = expired ? "Expired" : soon ? "Ending soon" : "Active";
+      badge.className = "badge " + (expired ? "bad" : soon ? "warn" : "good");
+      $("sub-bar").style.width = usedPct + "%";
+      $("sub-start").textContent = "Started " + fmtDate(start);
+      $("sub-end").textContent = (key === "student" ? "Ends " : "Renews ") + fmtDate(end);
+
+      let msg;
+      if (key === "student") {
+        msg = expired
+          ? "Your 12 months of free student access ended on " + fmtDate(end) + "."
+          : "You have " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + " of free student access left. It ends on " + fmtDate(end) + ".";
+        $("sub-action").textContent = expired ? "Choose a plan" : "Upgrade to Organisation";
+      } else {
+        msg = expired
+          ? "Your plan expired on " + fmtDate(end) + ". Renew it to keep using BioAudit."
+          : "Your plan is paid up for another " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + ". You'll need to renew by " + fmtDate(end) + " to keep access.";
+        $("sub-action").textContent = "Renew plan";
+      }
+      $("sub-message").textContent = msg;
+
+      const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
+      $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
+    }
+
+    /* ===== Account details (read-only) ===== */
+    function renderProfile() {
+      const name = profile.displayName || currentUser.displayName || "";
+      $("welcome").textContent = name ? "Welcome back, " + name.split(" ")[0] : "Welcome back";
+      $("who").textContent = currentUser.email || "";
+      $("ac-name").textContent = name || "–";
+      $("ac-email").textContent = currentUser.email || profile.email || "–";
+      $("ac-plan").textContent = PLANS[planKey()].name;
+      $("ac-since").textContent = fmtDate(toDate(profile.createdAt) || new Date(currentUser.metadata.creationTime));
+      if (profile.organisationName) {
+        $("ac-org-wrap").hidden = false;
+        $("ac-org").textContent = profile.organisationName;
+      }
+    }
+
+    /* ===== Reports ===== */
+    function severityChips(counts) {
+      const c = counts || {};
+      const parts = SEVERITIES.filter((s) => c[s] > 0)
+        .map((s) => '<span class="chip"><i style="background: var(--' + s + ')"></i>' + c[s] + " " + s + "</span>");
+      return parts.length ? '<div class="chips">' + parts.join("") + "</div>" : '<span class="muted">No issues found</span>';
+    }
+    function appName(s) {
+      const t = s.target || {};
+      return t.packageName || t.apkFileName || "Unknown app";
+    }
+    function scanType(s) {
+      return s.type === "device" ? "Device test" : s.type === "apk" ? "APK scan" : cap(s.type || "Scan");
+    }
+
+    function renderScans() {
+      const rows = $("scan-rows");
+      if (!scans.length) {
+        rows.innerHTML = '<tr><td colspan="5" class="empty">No scans yet. Run your first scan in the BioAudit app and it will appear here automatically.</td></tr>';
+      } else {
+        rows.innerHTML = scans.map((s, i) =>
+          "<tr data-i=\"" + i + "\">" +
+            "<td>" + esc(fmtDateTime(toDate(s.createdAt))) + "</td>" +
+            "<td>" + esc(appName(s)) + "</td>" +
+            "<td>" + esc(scanType(s)) + "</td>" +
+            "<td>" + severityChips(s.counts) + "</td>" +
+            '<td><button class="btn btn-ghost btn-small" type="button" data-view="' + i + '">View</button></td>' +
+          "</tr>"
+        ).join("");
+      }
+
+      // Overview numbers
+      $("ov-scans").textContent = String(scans.length);
+      $("ov-scans-note").textContent = scans.length === 1 ? "1 scan in your history" : scans.length + " scans in your history";
+      const latest = scans[0];
+      if (latest) {
+        $("ov-latest").textContent = appName(latest);
+        $("ov-latest-note").textContent = fmtDateTime(toDate(latest.createdAt));
+        $("ov-latest-findings").innerHTML = severityChips(latest.counts) +
+          '<p style="margin-top: 14px"><button class="btn btn-ghost btn-small" type="button" id="ov-open-latest">Open this report</button></p>';
+        $("ov-open-latest").addEventListener("click", () => { showTab("reports"); openScan(0); });
+      } else {
+        $("ov-latest").textContent = "None yet";
+        $("ov-latest-note").textContent = "Run a scan in the app";
+        $("ov-latest-findings").innerHTML = '<p class="muted" style="font-size: 0.9rem">Your latest scan will show here once you run one.</p>';
+      }
+    }
+
+    $("scan-rows").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-view]");
+      if (btn) openScan(Number(btn.dataset.view));
+    });
+
+    function findingsHtml(findings) {
+      if (!findings.length) return '<p class="muted" style="margin-top: 16px">No issues were found in this scan.</p>';
+      const sorted = [...findings].sort((a, b) => SEVERITIES.indexOf((a.severity || "info").toLowerCase()) - SEVERITIES.indexOf((b.severity || "info").toLowerCase()));
+      return sorted.map((f) => {
+        const sev = (f.severity || "info").toLowerCase();
+        return '<div class="finding">' +
+          "<h3>" + '<span class="chip"><i style="background: var(--' + esc(sev) + ')"></i>' + esc(sev) + "</span>" + esc(f.title) + "</h3>" +
+          (f.category ? '<p><span class="label">Category:</span> ' + esc(f.category) + (f.owasp && f.owasp.length ? " · OWASP " + esc(f.owasp.join(", ")) : "") + "</p>" : "") +
+          (f.explanation ? '<p><span class="label">What it means:</span> ' + esc(f.explanation) + "</p>" : "") +
+          (f.mitigation ? '<p><span class="label">How to fix it:</span> ' + esc(f.mitigation) + "</p>" : "") +
+          (f.evidence ? "<pre>" + esc(f.evidence) + "</pre>" : "") +
+        "</div>";
+      }).join("");
+    }
+
+    function openScan(i) {
+      const s = scans[i];
+      if (!s) return;
+      document.querySelectorAll("#scan-rows tr").forEach((tr) => tr.classList.toggle("selected", tr.dataset.i === String(i)));
+      const scope = s.scope || {};
+      const box = $("scan-detail");
+      box.hidden = false;
+      box.innerHTML =
+        '<div class="detail-head">' +
+          "<div><h2>" + esc(appName(s)) + '</h2><p class="muted" style="margin-top: 6px; font-size: 0.85rem">' + esc(scanType(s)) + " · " + esc(fmtDateTime(toDate(s.createdAt))) + "</p></div>" +
+          '<button class="btn btn-small" type="button" id="print-report">Save as PDF</button>' +
+        "</div>" +
+        '<div class="meta">' +
+          "<div><span>Findings</span>" + (s.findingCount ?? (s.findings || []).length) + "</div>" +
+          "<div><span>App version</span>" + esc(scope.appVersion || "–") + "</div>" +
+          "<div><span>Device</span>" + esc(scope.deviceModel || "–") + "</div>" +
+          "<div><span>Android version</span>" + esc(scope.androidVersion || "–") + "</div>" +
+          "<div><span>BioAudit version</span>" + esc(s.toolVersion || "–") + "</div>" +
+        "</div>" +
+        '<div style="margin-top: 18px">' + severityChips(s.counts) + "</div>" +
+        findingsHtml(s.findings || []);
+      $("print-report").addEventListener("click", () => printReport(s));
+      box.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    /* Opens a clean, printable version of a report. Choose "Save as PDF" in the print window. */
+    function printReport(s) {
+      const scope = s.scope || {};
+      const rows = (s.findings || []).map((f) =>
+        "<section><h3>[" + esc((f.severity || "info").toUpperCase()) + "] " + esc(f.title) + "</h3>" +
+        (f.category ? "<p><b>Category:</b> " + esc(f.category) + (f.owasp && f.owasp.length ? " (OWASP " + esc(f.owasp.join(", ")) + ")" : "") + "</p>" : "") +
+        (f.explanation ? "<p><b>What it means:</b> " + esc(f.explanation) + "</p>" : "") +
+        (f.mitigation ? "<p><b>How to fix it:</b> " + esc(f.mitigation) + "</p>" : "") +
+        (f.evidence ? "<pre>" + esc(f.evidence) + "</pre>" : "") + "</section>"
+      ).join("") || "<p>No issues were found in this scan.</p>";
+      const html =
+        "<!DOCTYPE html><html><head><meta charset='utf-8'><title>BioAudit report - " + esc(appName(s)) + "</title>" +
+        "<style>body{font-family:Consolas,monospace;color:#111;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.5}" +
+        "h1{font-weight:500}h3{margin:28px 0 6px}section{border-top:1px solid #ccc;padding-top:6px}" +
+        "pre{background:#f4f4f4;padding:10px;white-space:pre-wrap;word-break:break-word;font-size:12px}" +
+        "table{border-collapse:collapse}td{padding:3px 16px 3px 0}</style></he" + "ad><bo" + "dy>" +
+        "<h1>BioAudit scan report</h1>" +
+        "<table>" +
+          "<tr><td><b>App</b></td><td>" + esc(appName(s)) + "</td></tr>" +
+          "<tr><td><b>Scan type</b></td><td>" + esc(scanType(s)) + "</td></tr>" +
+          "<tr><td><b>Date</b></td><td>" + esc(fmtDateTime(toDate(s.createdAt))) + "</td></tr>" +
+          "<tr><td><b>App version</b></td><td>" + esc(scope.appVersion || "-") + "</td></tr>" +
+          "<tr><td><b>Device</b></td><td>" + esc(scope.deviceModel || "-") + "</td></tr>" +
+          "<tr><td><b>Findings</b></td><td>" + SEVERITIES.map((k) => (s.counts && s.counts[k] ? s.counts[k] : 0) + " " + k).join(", ") + "</td></tr>" +
+        "</table>" + rows + "</bo" + "dy></ht" + "ml>"; // split so dev servers don't inject code here
+      const w = window.open("", "_blank");
+      if (!w) { alert("Allow pop-ups for this site to save the report."); return; }
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      // Print from here rather than from inside the new page, so this file never
+      // contains a closing script tag inside the script (that breaks the whole page)
+      w.focus();
+      setTimeout(() => w.print(), 300);
+    }
+
+    async function loadScans() {
+      try {
+        // Filtering by userId is what the database rules allow; sorting happens here
+        const snap = await getDocs(query(collection(db, "scans"), where("userId", "==", currentUser.uid), limit(100)));
+        scans = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        scans.sort((a, b) => (toDate(b.createdAt) || 0) - (toDate(a.createdAt) || 0));
+      } catch (err) {
+        console.error("Could not load scans:", err);
+        scans = [];
+      }
+      renderScans();
+    }
+
+    /* ===== Sign out ===== */
+    $("signout-btn").addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "login.html";
+    });
+
+    /* ===== Start ===== */
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = user;
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        profile = snap.exists() ? snap.data() : {};
+      } catch (err) {
+        console.error("Could not load profile:", err);
+        profile = {};
+      }
+      renderProfile();
+      renderPlan();
+      await loadScans();
+
+      $("loading").hidden = true;
+      $("app").hidden = false;
+      const start = location.hash.replace("#", "");
+      showTab(tabs.includes(start) ? start : "overview");
+    });
+  </script>
+
+</body>
+</html>
