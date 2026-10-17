@@ -47,6 +47,9 @@
     }
     .top img { display: block; width: 96px; height: 96px; }
 
+    .top .brand { display: inline-flex; align-items: center; gap: 14px; text-decoration: none; color: var(--mint); }
+    .top .brand span { font-size: 1.05rem; letter-spacing: 0.06em; }
+
     .wrap {
       position: relative;
       z-index: 1;
@@ -157,7 +160,7 @@
   </video>
 
   <header class="top">
-    <a href="index.html"><img src="assets/favicon.png" alt="BioAudit home"></a>
+    <a class="brand" href="index.html"><img src="assets/favicon.png" alt=""><span>BIOAUDIT</span></a>
   </header>
 
   <main class="wrap">

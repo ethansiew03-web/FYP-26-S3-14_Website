@@ -15,6 +15,7 @@
       --panel: #0D1015;
       --panel-2: #141820;
       --mint: #EDFCEB;
+      --cream: #FFFDD0;
       --orange: #FF6C3F;
       --line: #2C3038;
       --line-2: #505050;
@@ -22,6 +23,7 @@
       --good: #7FD8A4;
       --warn: #F4B23E;
       --bad: #FF6C3F;
+      --navy: #0F172A;
       /* Severity colours */
       --critical: #FF4D4D;
       --high: #FF8A3D;
@@ -33,7 +35,7 @@
     * { box-sizing: border-box; margin: 0; }
     body {
       font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-      background: radial-gradient(90% 60% at 70% 0%, #0A1622 0%, var(--black) 60%) fixed, var(--black);
+      background: var(--navy);
       color: var(--mint);
       min-height: 100vh;
     }
@@ -50,13 +52,13 @@
       justify-content: space-between;
       gap: 16px;
       padding: 20px clamp(20px, 4vw, 48px);
-      border-bottom: 1px solid var(--line);
+      border-bottom: 2px solid var(--orange);
     }
     .topbar .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
     .topbar .brand img { width: 44px; height: 44px; display: block; }
     .topbar .brand span { font-size: 1.05rem; letter-spacing: 0.06em; }
     .topbar .right { display: flex; align-items: center; gap: 20px; font-size: 0.9rem; }
-    .topbar .who { color: var(--dim); }
+    .topbar .who { color: var(--mint); }
 
     /* ===== Buttons ===== */
     .btn {
@@ -72,6 +74,7 @@
       cursor: pointer;
     }
     .btn:hover { filter: brightness(1.08); }
+    [hidden] { display: none !important; }
     .btn[disabled] { opacity: 0.5; cursor: default; filter: none; }
     .btn-ghost {
       background: transparent;
@@ -93,17 +96,19 @@
     .tabs { display: flex; flex-direction: column; gap: 6px; }
     .tab {
       text-align: left;
-      background: transparent;
-      color: var(--dim);
+      background: var(--mint);
+      color: #000;
       border: 0;
-      border-left: 2px solid transparent;
-      padding: 10px 14px;
+      border-left: 4px solid var(--orange);
+      border-radius: 6px;
+      padding: 12px 16px;
       font-family: inherit;
       font-size: 0.95rem;
+      font-weight: 600;
       cursor: pointer;
     }
-    .tab:hover { color: var(--mint); }
-    .tab[aria-selected="true"] { color: var(--mint); border-left-color: var(--orange); background: var(--panel); }
+    .tab:hover { filter: brightness(0.95); }
+    .tab[aria-selected="true"] { background: #C9F2C4; border-left-width: 8px; }
 
     .panel-section[hidden] { display: none; }
     h1 { font-weight: 400; font-size: clamp(1.7rem, 3vw, 2.4rem); line-height: 1.15; }
@@ -113,10 +118,11 @@
 
     .card {
       background: var(--panel);
-      border: 1px solid var(--line);
+      border: 1px solid var(--cream);
       border-radius: 10px;
       padding: 24px;
     }
+
     .grid { display: grid; gap: 20px; margin-top: 28px; }
     .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -149,6 +155,9 @@
     .download { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
     .download p { color: var(--dim); font-size: 0.88rem; margin-top: 8px; line-height: 1.5; max-width: 56ch; }
 
+    /* Email */
+    .enquiry p { margin-top: 8px; color: var(--dim); font-size: 0.88rem; line-height: 1.5; max-width: 56ch; }
+
     /* Severity chips */
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip {
@@ -164,7 +173,7 @@
     .chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
     /* Reports table */
-    .table-wrap { overflow-x: auto; margin-top: 24px; border: 1px solid var(--line); border-radius: 10px; }
+    .table-wrap { overflow-x: auto; margin-top: 24px; border: 1px solid var(--cream); border-radius: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 760px; }
     th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
     th { color: var(--dim); font-weight: 400; font-size: 0.8rem; background: var(--panel); }
@@ -242,9 +251,9 @@
     }
     @media (max-width: 800px) {
       .layout { grid-template-columns: 1fr; gap: 24px; }
-      .tabs { flex-direction: row; overflow-x: auto; gap: 4px; }
-      .tab { border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; }
-      .tab[aria-selected="true"] { border-bottom-color: var(--orange); }
+      .tabs { max-width: 260px; }
+      .tab { white-space: nowrap; }
+      .tab[aria-selected="true"] { border-left-width: 8px; }
       .grid-2 { grid-template-columns: 1fr; }
       .details dl > div { grid-template-columns: 1fr; gap: 4px; }
       .topbar .who { display: none; }
@@ -260,7 +269,7 @@
     <a class="brand" href="index.html"><img src="assets/favicon.png" alt=""><span>BIOAUDIT</span></a>
     <div class="right">
       <span class="who" id="who"></span>
-      <button class="btn btn-ghost btn-small" type="button" id="signout-btn">Sign out</button>
+      <button class="btn btn-small" type="button" id="signout-btn">Sign out</button>
     </div>
   </header>
 
@@ -326,6 +335,18 @@
           <h2>Latest scan findings</h2>
           <div id="ov-latest-findings" style="margin-top: 16px"></div>
         </div>
+
+        <div class="enquiry" style="margin-top: 20px">
+          <div>
+            <h2>Have a question?</h2>
+            <p>For questions about BioAudit, your scans, your account or your plan, email our team and we'll get back to you.</p>
+          </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 16px">
+            <a class="btn" href="mailto:fyp26s314@gmail.com?subject=BioAudit%20enquiry">Email us</a>
+            <button class="btn btn-ghost" type="button" id="copy-email">Copy email address</button>
+            <span class="muted" style="font-size: 0.88rem">fyp26s314@gmail.com</span>
+          </div>
+        </div>         
       </section>
 
       <!-- ===== Reports ===== -->
@@ -361,6 +382,7 @@
             <div><dt>Name</dt><dd id="ac-name">–</dd></div>
             <div><dt>Email address</dt><dd id="ac-email">–</dd></div>
             <div id="ac-org-wrap" hidden><dt>Organisation</dt><dd id="ac-org">–</dd></div>
+            <div id="ac-role-wrap" hidden><dt>Role</dt><dd id="ac-role">–</dd></div>
             <div><dt>Plan</dt><dd id="ac-plan">–</dd></div>
             <div><dt>Member since</dt><dd id="ac-since">–</dd></div>
           </dl>
@@ -635,6 +657,10 @@
         $("ac-org-wrap").hidden = false;
         $("ac-org").textContent = profile.organisationName;
       }
+            if (profile.organisationId) {
+        $("ac-role-wrap").hidden = false;
+        $("ac-role").textContent = profile.role === "admin" ? "Admin" : "Member";
+      }
     }
 
     /* ===== Reports ===== */
@@ -778,6 +804,16 @@
       }
       renderScans();
     }
+
+    $("copy-email").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText("fyp26s314@gmail.com");
+        $("copy-email").textContent = "Copied!";
+      } catch {
+        $("copy-email").textContent = "Copy failed – select the address instead";
+      }
+      setTimeout(() => { $("copy-email").textContent = "Copy email address"; }, 2000);
+    });
 
     /* ===== Sign out ===== */
     $("signout-btn").addEventListener("click", async () => {

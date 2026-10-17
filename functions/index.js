@@ -44,43 +44,75 @@ exports.syncSubscriptionTier = onDocumentWritten(
     const profile = userSnap.data();
 
     let tier;
-    let subscription;
+    let organisationId = profile.organisationId ?? null;
+    let role = profile.role || "member";
 
     if (PAID.includes(status)) {
-      tier = "premium";
       const start = after.current_period_start instanceof Timestamp
         ? after.current_period_start
         : FieldValue.serverTimestamp();
-      subscription = { status: "active", startedAt: start, cancelledAt: null };
+
+      // Upgrade, and give a first-time Organisation customer their organisation,
+      // the same way the backend's register-admin does: an organisations document
+      // with them as owner, admin and member, linked from their user record.
+      // Runs in a transaction so a repeated Stripe event can't create two.
+      const result = await db.runTransaction(async (tx) => {
+        const fresh = (await tx.get(userRef)).data();
+        const update = {
+          tier: "premium",
+          subscription: { status: "active", startedAt: start, cancelledAt: null },
+          updatedAt: FieldValue.serverTimestamp()
+        };
+        let orgId = fresh.organisationId ?? null;
+        let newRole = fresh.role || "member";
+
+        if (!orgId) {
+          const orgRef = db.collection("organisations").doc();
+          const name = (fresh.organisationName || "").trim() ||
+            ((fresh.displayName || "My") + "'s organisation");
+          tx.set(orgRef, {
+            name: name.slice(0, 120),
+            ownerId: uid,
+            adminIds: [uid],
+            memberIds: [uid],
+            createdAt: FieldValue.serverTimestamp()
+          });
+          orgId = orgRef.id;
+          newRole = "admin";
+          update.organisationId = orgId;
+          update.role = newRole;
+        }
+
+        tx.update(userRef, update);
+        return { orgId, newRole };
+      });
+
+      tier = "premium";
+      organisationId = result.orgId;
+      role = result.newRole;
     } else if (ENDED.includes(status)) {
+      // Ending the plan drops the tier only. The organisation and its members
+      // are left alone, as the backend does when a subscription is cancelled.
+      if (profile.tier === "free" && profile.subscription && profile.subscription.status === "cancelled") return;
       tier = "free";
-      subscription = {
-        status: "cancelled",
-        startedAt: (profile.subscription && profile.subscription.startedAt) || null,
-        cancelledAt: FieldValue.serverTimestamp()
-      };
+      await userRef.update({
+        tier,
+        subscription: {
+          status: "cancelled",
+          startedAt: (profile.subscription && profile.subscription.startedAt) || null,
+          cancelledAt: FieldValue.serverTimestamp()
+        },
+        updatedAt: FieldValue.serverTimestamp()
+      });
     } else {
       // trialing, incomplete, past_due, paused: leave the account as it is
       logger.info(`Subscription for ${uid} is "${status}"; no change`);
       return;
     }
 
-    if (profile.tier === tier && profile.subscription && profile.subscription.status === subscription.status) {
-      return; // already up to date
-    }
+    // Keep the login's custom claims in step, as the backend's setClaims() does
+    await getAuth().setCustomUserClaims(uid, { tier, role, organisationId });
 
-    await userRef.update({ tier, subscription, updatedAt: FieldValue.serverTimestamp() });
-
-    // Keep the login's custom claims in step, preserving role and organisation
-    const user = await getAuth().getUser(uid);
-    const claims = user.customClaims || {};
-    await getAuth().setCustomUserClaims(uid, {
-      ...claims,
-      tier,
-      role: profile.role || claims.role || "member",
-      organisationId: profile.organisationId ?? claims.organisationId ?? null
-    });
-
-    logger.info(`Set ${uid} to ${tier} (Stripe status "${status}")`);
+    logger.info(`Set ${uid} to ${tier}, role ${role}, organisation ${organisationId} (Stripe status "${status}")`);
   }
 );

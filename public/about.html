@@ -16,7 +16,7 @@
     --mint: #EDFCEB;
     --orange: #FF6C3F;
     --line: #505050;
-    --header-h: 216px;
+    --header-h: 140px;
   }
 
   * { box-sizing: border-box; margin: 0; }
@@ -50,12 +50,13 @@
     height: var(--header-h);
     background: var(--black);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 24px;
     padding: 28px clamp(20px, 4vw, 64px);
+    border-bottom: 2px solid var(--orange);
   }
-  .logo img { display: block; width: 160px; height: 160px; }
+  .logo img { display: block; width: 110px; height: 110px; }
   .site-header nav { display: flex; align-items: center; gap: 28px; }
   .site-header nav ul {
     display: flex;
@@ -73,6 +74,20 @@
     letter-spacing: 0.28em;
     font-size: 0.85rem;
   }
+
+  .site-header nav ul a[aria-current="page"] {
+  position: relative;
+  }
+  .site-header nav ul a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    width: calc(100% - 0.28em);
+    height: 2px;
+    background: #FFFFFF;
+  }
+
   .btn {
     display: inline-block;
     background: var(--orange);
@@ -126,11 +141,13 @@
     background: var(--black);
     display: grid;
     grid-template-columns: 1fr 1.4fr;
-    gap: 48px;
-    padding: 80px clamp(20px, 5vw, 64px) 48px;
+    column-gap: 48px;
+    row-gap: 0;
+    padding: 48px clamp(20px, 5vw, 64px) 28px;
   }
-  footer .logo img { width: 222px; height: 222px; }
-  footer ul { list-style: none; padding: 0; margin-top: 36px; }
+
+  footer .logo img { width: 140px; height: 140px; }
+  footer ul { list-style: none; padding: 0; margin-top: 24px; }
   footer ul li + li { margin-top: 16px; }
   footer ul a {
     color: var(--mint);
@@ -140,9 +157,9 @@
     font-size: 1.05rem;
   }
   .mailing { align-self: center; }
-  .mailing h2 { font-weight: 400; font-size: clamp(1.8rem, 3vw, 2.8rem); }
-  .mailing > p { margin-top: 32px; font-size: 0.9rem; }
-  .mailing label { display: block; margin-top: 24px; font-size: 0.85rem; }
+  .mailing h2 { font-weight: 500; font-size: clamp(1.8rem, 3vw, 1.5rem); }
+  .mailing > p { margin-top: 32px; font-size: 1rem; }
+  .mailing label { display: block; margin-top: 24px; font-size: 1rem; }
   .mailing input[type="email"] {
     display: block;
     width: 100%;
@@ -167,7 +184,10 @@
   .mailing .consent input { width: 16px; height: 16px; accent-color: var(--orange); }
   .mailing .btn { margin-top: 24px; width: 100%; max-width: 256px; padding: 10px; font-size: 0.95rem; }
   .mailing .form-msg { margin-top: 12px; min-height: 1.2em; font-size: 0.85rem; color: var(--orange); }
-  .copyright { grid-column: 1 / -1; margin-top: 48px; font-size: 0.8rem; color: #9aa49a; }
+  .contact { grid-column: 1 / -1; margin-top: 28px; font-size: 1rem; color: #9aa49a; }
+  .contact a { color: var(--mint); }
+  .contact + .copyright { margin-top: 8px; }
+  .copyright { grid-column: 1 / -1; margin-top: 48px; font-size: 0.90rem; color: #9aa49a; }
 
   /* ===== Fade-in on scroll ===== */
   .reveal { opacity: 0; transition: opacity 0.9s ease, translate 0.9s ease; translate: 0 24px; }
@@ -197,11 +217,11 @@
   <a class="logo" href="index.html"><img src="assets/logo.png" alt="BioAudit home"></a>
   <nav>
     <ul>
-      <li><a href="about.html">About</a></li>
+      <li><a href="about.html" aria-current="page">About</a></li>
       <li><a href="plans.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
     </ul>
-    <a class="btn" href="login.html">Get Started</a>
+    <a class="btn" href="login.html">Login</a>
   </nav>
 </header>
 
@@ -239,7 +259,7 @@
     <button class="btn" type="submit">Join Now</button>
     <p class="form-msg" id="mail-msg" role="status"></p>
   </form>
-
+  <p class="contact">Questions? Email us at <a href="mailto:fyp26s314@gmail.com">fyp26s314@gmail.com</a></p>
   <p class="copyright">© 2026 by BioAudit.</p>
 </footer>
 
