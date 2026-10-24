@@ -16,6 +16,7 @@
       --orange: #FF6C3F;
       --line: #505050;
       --dim: #A9B3A9;
+      --white: #FFFFFF;
     }
 
     * { box-sizing: border-box; margin: 0; }
@@ -144,6 +145,7 @@
       color: var(--dim);
       line-height: 1.4;
     }
+    .checkbox-row a { color: solid var(--mint); }
     .checkbox-row input { margin-top: 3px; accent-color: var(--orange); }
 
     .btn {
@@ -199,7 +201,7 @@
 
   <main class="wrap">
     <div class="card">
-      <h1>Create account</h1>
+      <h1 id="signup-title">Create account</h1>
       <p class="lead">Please provide your personal information to create your new account.</p>
 
       <form id="signup-form">
@@ -215,7 +217,7 @@
         <label class="field" for="confirmPassword">Confirm password *</label>
         <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required />
 
-        <fieldset>
+        <fieldset id="plan-picker">
           <legend>Subscription type *</legend>
           <div class="plans">
             <label class="plan-option" for="sub-student">
@@ -236,7 +238,7 @@
 
         <div class="checkbox-row">
           <input type="checkbox" id="terms" required />
-          <label for="terms">I agree to the subscription terms and conditions. *</label>
+          <label for="terms">I agree to the subscription terms and conditions. * <a href="terms.html" target="_blank" rel="noopener">Read T&amp;C</a></label>
         </div>
 
         <button class="btn" type="submit">Create account</button>
@@ -281,6 +283,20 @@
         orgNameInput.required = isOrg;
       });
     });
+
+    // Open the right plan when coming from a Buy Now button (signup.html?plan=...)
+    const planFromLink = new URLSearchParams(location.search).get("plan");
+    if (planFromLink === "student" || planFromLink === "organisation") {
+      const radio = document.getElementById(planFromLink === "student" ? "sub-student" : "sub-org");
+      radio.checked = true;
+      radio.dispatchEvent(new Event("change"));
+
+      document.getElementById("plan-picker").hidden = true;
+      document.getElementById("signup-title").textContent =
+        planFromLink === "student" ? "Create a Student account" : "Create an Organisation account";
+    } else {
+      location.replace("plans.html");
+    }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

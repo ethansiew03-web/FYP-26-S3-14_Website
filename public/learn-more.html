@@ -17,6 +17,8 @@
     --orange: #FF6C3F;
     --line: #505050;
     --header-h: 140px;
+    --card: rgba(30, 41, 59, 0.75);
+    --card-edge: #334155;
   }
 
   * { box-sizing: border-box; margin: 0; }
@@ -121,10 +123,10 @@
     padding: 0 clamp(20px, 5vw, 96px) 160px;
   }
   .card {
-    background: rgba(88, 90, 90, 0.55);
+    background: var(--card);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    border: 1px solid rgba(237, 252, 235, 0.18);
+    border: 1px solid var(--card-edge);
     border-radius: 8px;
     padding: 30px 30px 48px;
     min-height: 540px;
@@ -238,7 +240,7 @@
 <main>
   <section class="intro">
     <!-- Change or remove this heading if the Wix page had a different one -->
-    <h1 class="reveal">Addtional Features</h1>
+    <h1 class="reveal">Additional Features</h1>
   </section>
 
   <section class="cards">
@@ -294,6 +296,7 @@
       <li><a href="about.html">About</a></li>
       <li><a href="plans.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
+      <li><a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a></li>
     </ul>
   </div>
 

@@ -16,8 +16,8 @@
     --mint: #EDFCEB;
     --orange: #FF6C3F;
     --line: #505050;
-    --card: #474A44;
-    --card-edge: #6A6D66;
+    --card: #1E293B;
+    --card-edge: #334155;
     --header-h: 140px;
   }
 
@@ -101,26 +101,43 @@
     justify-content: center;
     padding: calc(var(--header-h) + 40px) clamp(20px, 5vw, 96px) 80px;
   }
+  .hero-inner {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
   .hero h1 {
     font-weight: 400;
     text-transform: uppercase;
-    font-size: clamp(2.4rem, 6vw, 5.4rem);
-    line-height: 1.05;
-    max-width: 12ch;
+    font-size: clamp(1.8rem, 3.4vw, 3.6rem);
+    line-height: 1.1;
+    text-align: center;
+  }
+  .hero .app-preview {
+    display: block;
+    width: 100%;
+    margin-top: 40px;
+    border-radius: 12px;
+    max-width: 1060px;
+    margin-left: auto;
+    margin-right: auto;
+    -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 90%);
+    mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
   }
   .hero p {
-    margin-top: 24px;
-    font-size: 1.2rem;
+    margin-top: 8px;
+    font-size: 0.95rem;
     line-height: 1.5;
     max-width: 30ch;
   }
+  .hero .btn { display: inline-block; margin-top: 24px; }
 
   /* ===== Features: "Rules Decide. AI Explains." ===== */
   .features {
     display: grid;
-    grid-template-columns: 1fr minmax(0, 700px);
+    grid-template-columns: 1fr;
     gap: 48px;
-    align-items: center;
+    align-items: start;
     padding: 120px clamp(20px, 5vw, 96px) 160px;
   }
   .features h2 {
@@ -130,7 +147,7 @@
   }
   .cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 32px;
   }
   .card {
@@ -139,11 +156,10 @@
     border-radius: 8px;
     padding: 36px 32px 44px;
   }
-  .cards .card:nth-child(even) { transform: translateY(40px); }
   .card svg { width: 56px; height: 56px; stroke: var(--mint); fill: none; stroke-width: 1.5; }
   .card h3 {
     font-weight: 300;
-    font-size: clamp(1.4rem, 2vw, 1.85rem);
+    font-size: clamp(1.15rem, 1.5vw, 1.45rem);
     line-height: 1.2;
     margin: 28px 0 32px;
   }
@@ -154,6 +170,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 48px;
+    align-items: center;
     padding: 160px clamp(20px, 5vw, 96px) 200px;
   }
   .detection h2 {
@@ -169,6 +186,14 @@
     border-left: 2px solid var(--orange);
   }
   .detection .side .btn { margin-top: 72px; }
+  .detection-text .side { margin-top: 40px; }
+  .detection .scan-preview {
+    display: block;
+    width: 100%;
+    border-radius: 12px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+  }
 
   /* ===== Footer ===== */
   footer {
@@ -229,6 +254,7 @@
   /* ===== Tablet & phone ===== */
   @media (max-width: 960px) {
     .features, .detection { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .detection .side .btn { margin-top: 40px; }
     footer { grid-template-columns: 1fr; }
   }
@@ -238,7 +264,6 @@
     .site-header { padding: 20px; }
     .site-header nav ul { display: none; }
     .cards { grid-template-columns: 1fr; }
-    .cards .card:nth-child(even) { transform: none; }
     footer .logo img { width: 160px; height: 160px; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -268,9 +293,17 @@
 <main>
   <!-- ===== Hero ===== -->
   <section class="hero">
-    <h1>Is your biometric login as secure as it looks?</h1>
-    <p>Find the security gaps hiding behind it with BioAudit.</p>
+    <div class="hero-inner">
+    <h1>An automated biometric security <br> analysis for mobile apps </h1>
+    <div class="hero-body">
+    <img class="app-preview" src="assets/app-home.png" alt="The BioAudit app home screen, with options to scan an APK, assess a device or view history">
+    <p>Find the security gaps hiding behind your app with BioAudit.</p>
+    <a class="btn" href="plans.html">Get BioAudit</a>
+      </div>
+    </div>  
   </section>
+
+
 
   <!-- ===== Features ===== -->
   <section class="features" id="features">
@@ -318,17 +351,31 @@
         <p>Every finding is confirmed by deterministic rules and then explained in plain language with a concrete fix. Can be exported as a shareable report.</p>
       </article>
     </div>
-  </section>
 
+  </section>
   <!-- ===== Detection ===== -->
   <section class="detection">
-    <h2 class="reveal">Thorough Detection.<br>Practical Recommendations.</h2>
-    <div class="side reveal">
-      <p>Biometric login can look secure without being secure. See exactly where yours fails, no root or source code required.</p>
-      <!-- Change "#" to about.html once that page exists -->
-      <a class="btn" href="learn-more.html">Learn More</a>
+    <div class="detection-text">
+      <h2 class="reveal">Thorough Detection.<br>Practical Recommendations.</h2>
+      <div class="side reveal">
+        <p>Biometric login can look secure without being secure. See exactly where yours fails, no root or source code required.</p>
+        <a class="btn" href="learn-more.html">Learn More</a>
+      </div>
     </div>
-  </section>
+    <img class="scan-preview reveal" src="assets/app-scan.png" alt="The BioAudit Scan an APK screen: choose an APK file, confirm you're authorised to test it, then run a static scan">
+  </section> 
+   
+  <!-- ===== For organisations ===== -->
+  <section class="detection detection-flip">
+    <img class="scan-preview reveal" src="assets/app-admin.png" alt="The BioAudit admin home screen, with a Team area for managing members, invitations, flagged runs and activity">
+    <div class="detection-text">
+      <h2 class="reveal">Built for teams.<br>Oversight for admins.</h2>
+      <div class="side reveal">
+        <p>Organisation admins get their own view of the app. Invite members, see every run your team makes, and review flagged results in one place.</p>
+        <a class="btn" href="plans.html">See the Organisation plan</a>
+      </div>
+    </div>
+  </section>  
 </main>
 
 <!-- ===== Footer ===== -->
@@ -339,6 +386,8 @@
       <li><a href="about.html">About</a></li>
       <li><a href="about.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
+      <li><a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a></li>
+      
     </ul>
   </div>
 

@@ -14,6 +14,7 @@
     --black: #000000;
     --navy: #000812;
     --mint: #EDFCEB;
+    --white: #fff;
     --orange: #FF6C3F;
     --line: #505050;
     --header-h: 140px;
@@ -118,7 +119,7 @@
   .pricing .heading {
   display: inline-block;
   padding-bottom: 24px;
-  border-bottom: 2px solid #fff;
+  border-bottom: 2px solid var(--white);
   }
 
   .pricing .sub { margin-top: 12px; font-size: clamp(1.1rem, 1.8vw, 1.6rem); }
@@ -150,7 +151,7 @@
   .price .amt { font-size: clamp(2.6rem, 4vw, 3.4rem); }
   .price .per { font-size: 1rem; align-self: flex-end; margin-bottom: 6px; }
   .plan .desc { margin-top: 24px; font-size: 0.95rem; line-height: 1.45; max-width: 34ch; }
-  .plan .term { margin-top: 14px; font-size: 0.8rem; color: #9aa49a; min-height: 1.2em; }
+  .plan .term { margin-top: 14px; font-size: 0.8rem; color: var(--black); min-height: 1.2em; }
   .plan ul {
     list-style: none;
     padding: 28px 0 0;
@@ -276,18 +277,16 @@
       <h2>Student</h2>
       <div class="price"><span class="cur">$</span><span class="amt">0</span></div>
       <p class="desc">For students to test the security of their app</p>
-      <p class="term">Valid for 12 months</p>
+      <p class="term">*Valid for 12 months</p>
       <ul>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Black-box scanning of any Android app, no source code or root access needed</span></li>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Authentication bypass detection</span></li>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Side-channel leak detection</span></li>
-        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Plain-language explanations with a concrete fix for every finding</span></li>
-        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Export scan reports as HTML or PDF</span></li>
-        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Compare two scans side by side</span></li>
-        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Scan history saved to your account</span></li>
+        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>20 plain-language explanations with a concrete fix for every finding per month</span></li>
+        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Up to 10 latest scans saved to your account history</span></li>
       </ul>
-      <!-- Change this link once payment is set up -->
-      <a class="btn" href="signup.html">Buy Now</a>
+      <!-- Opens the sign-up page with only the Student plan -->
+      <a class="btn" href="signup.html?plan=student">Buy Now</a>
     </article>
     <article class="plan reveal">
       <h2>Organisation</h2>
@@ -298,14 +297,14 @@
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Black-box scanning of any Android app, no source code or root access needed</span></li>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Authentication bypass detection</span></li>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Side-channel leak detection</span></li>
-        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Plain-language explanations with a concrete fix for every finding</span></li>
+        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Unlimited plain-language explanations with a concrete fix for every finding</span></li>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Export scan reports as HTML or PDF</span></li>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Compare two scans side by side</span></li>
-        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Scan history saved to your account</span></li>
+        <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Unlimited scans saved to your account history</span></li>
         <li><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9.5 L7 13.5 L15 4.5"/></svg><span>Team management for organisations</span></li>
       </ul>
-      <!-- Change this link once payment is set up -->
-      <a class="btn" href="signup.html">Buy Now</a>
+      <!-- Opens the sign-up page with only the Organisation plan -->
+      <a class="btn" href="signup.html?plan=organisation">Buy Now</a>
     </article>
     </div>
   </section>
@@ -318,6 +317,7 @@
       <li><a href="about.html">About</a></li>
       <li><a href="plans.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
+      <li><a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a></li>
     </ul>
   </div>
 

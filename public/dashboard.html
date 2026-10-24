@@ -381,7 +381,7 @@
           <dl>
             <div><dt>Name</dt><dd id="ac-name">–</dd></div>
             <div><dt>Email address</dt><dd id="ac-email">–</dd></div>
-            <div id="ac-org-wrap" hidden><dt>Organisation</dt><dd id="ac-org">–</dd></div>
+            <div id="ac-org-wrap" hidden><dt>Organisation Name</dt><dd id="ac-org">–</dd></div>
             <div id="ac-role-wrap" hidden><dt>Role</dt><dd id="ac-role">–</dd></div>
             <div><dt>Plan</dt><dd id="ac-plan">–</dd></div>
             <div><dt>Member since</dt><dd id="ac-since">–</dd></div>
@@ -438,6 +438,7 @@
     import {
       getFirestore,
       doc,
+      getDoc,
       onSnapshot,
       collection,
       query,
@@ -657,11 +658,23 @@
         $("ac-org-wrap").hidden = false;
         $("ac-org").textContent = profile.organisationName;
       }
-            if (profile.organisationId) {
-        $("ac-role-wrap").hidden = false;
-        $("ac-role").textContent = profile.role === "admin" ? "Admin" : "Member";
+      if (profile.organisationId) {
+        loadOrganisationName(profile.organisationId);
       }
     }
+    /* Reads the organisation's name from organisations/{id}, for accounts made in the app */
+    async function loadOrganisationName(orgId) {
+      try {
+        const snap = await getDoc(doc(db, "organisations", orgId));
+        const name = snap.exists() ? snap.data().name : "";
+        if (name) {
+          $("ac-org-wrap").hidden = false;
+          $("ac-org").textContent = name;
+        }
+      } catch (err) {
+        console.error("Could not load organisation:", err);
+      }
+    }    
 
     /* ===== Reports ===== */
     function severityChips(counts) {

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms and Conditions | BioAudit</title>
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Same colours as the sign-up and login pages */
+    :root {
+      --black: #000000;
+      --mint: #EDFCEB;
+      --orange: #FF6C3F;
+      --line: #505050;
+      --dim: #A9B3A9;
+      --navy: #1E293B;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    body {
+      font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      background: var(--navy);
+      color: var(--mint);
+      min-height: 100vh;
+    }
+
+    a { color: var(--mint); }
+    a:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+
+    /* Logo back to the homepage (same as sign-up and login) */
+    .top { padding: 28px clamp(20px, 4vw, 64px); }
+    .top .brand { display: inline-flex; align-items: center; gap: 14px; text-decoration: none; color: var(--mint); }
+    .top .brand img { display: block; width: 56px; height: 56px; }
+    .top .brand span { font-size: 1.05rem; letter-spacing: 0.06em; }
+
+    /* The terms themselves */
+    .terms {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px 20px 96px;
+    }
+    .terms h1 { font-weight: 400; font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1.2; }
+    .terms .updated { margin-top: 10px; color: var(--dim); font-size: 0.85rem; }
+
+    .notice {
+      margin-top: 28px;
+      padding: 16px 20px;
+      border-left: 2px solid var(--orange);
+      background: rgba(255, 108, 63, 0.08);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .terms h2 {
+      margin-top: 44px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      font-weight: 500;
+      font-size: 1.15rem;
+    }
+    .terms p, .terms li { font-size: 0.92rem; line-height: 1.65; }
+    .terms p { margin-top: 14px; }
+    .terms ul { margin-top: 12px; padding-left: 22px; }
+    .terms li + li { margin-top: 8px; }
+    .terms strong { font-weight: 500; color: #fff; }
+
+    .back { margin-top: 56px; font-size: 0.88rem; color: var(--dim); }
+  </style>
+</head>
+<body>
+
+  <header class="top">
+    <a class="brand" href="index.html"><img src="assets/favicon.png" alt=""><span>BIOAUDIT</span></a>
+  </header>
+
+  <main class="terms">
+    <h1>BioAudit Terms and Conditions</h1>
+    <p class="updated">Last updated: 21 October 2026</p>
+
+    <p class="notice">BioAudit is a university project, and these terms are for demonstration purposes only.</p>
+
+    <p>By creating an account on bioaudit.me or using the BioAudit app, you agree to these terms. If you don't agree with them, please don't sign up or use the tool.</p>
+    <p>These terms were last updated on 21 October 2026. "We", "us" and "our" mean the BioAudit project team. "You" means anyone who uses the website or the app.</p>
+
+    <h2>1. What BioAudit is</h2>
+    <p>BioAudit is a security testing tool for Android biometric authentication (for example fingerprint and face ID). It checks how an Android app handles biometric login using static APK analysis, dynamic runtime testing and timing side-channel detection. It does not need root access.</p>
+    <p>BioAudit is a Final Year Project built by university students. It is a working tool, but it is not a commercial product backed by a company. The app is a Windows desktop program (.exe) that connects to a backend we host ourselves.
+        Dynamic testing also needs ADB (Android Debug Bridge) on your PC and USB debugging switched on for a physical Android device.</p>
+
+    <h2>2. Accounts</h2>
+    <p>You need an account to use the dashboard and download the app. There are two kinds of plans, Student and Organisation (see section 3).</p>
+    <ul>
+      <li>Give us accurate details when you sign up and keep them up to date.</li>
+      <li>Keep your password safe. You are responsible for what happens under your account. If you think your account is compromised, inform the project team immediately and we will assist you.</li>
+      <li>One person can only own one account. Do not share your account details.</li>
+      <li>Organisation accounts are set up on behalf of a company or group. If you create one, you confirm you are allowed to do that for your organisation. Organisation members join through their organisation and are covered by these terms too.</li>
+      <li>If you are under 18, check with a parent, guardian or your school before signing up.</li>
+    </ul>
+
+    <h2>3. Plans and payments</h2>
+    <p>BioAudit currently has two plans:</p>
+    <ul>
+      <li><strong>Student:</strong> for students using BioAudit for study or personal projects.</li>
+      <li><strong>Organisation:</strong> for a company or group that buys the plan and lets its members use BioAudit.</li>
+    </ul>
+    <p>Your dashboard shows your plan and how much time is left before it expires or renews.</p>
+    <p>Payments on the website are a mock set-up for now. We use Stripe in test mode, so no real money is taken and you should not enter real card details. If we switch on real payments later, we will update these terms and tell you the price, billing period and refund rules before payment.</p>
+
+    <h2>4. Only test what you are allowed to test</h2>
+    <p><strong>This is the most important rule.</strong> BioAudit is a security testing tool, so it must only be used on apps and devices where you have permission.</p>
+    <p>You may use BioAudit on:</p>
+    <ul>
+      <li>apps you built or own</li>
+      <li>apps your employer or client has clearly authorised you to test</li>
+      <li>test apps and devices set up for learning or research</li>
+    </ul>
+    <p>You must not use BioAudit on someone else's app, device or data without their permission. Testing without permission can break the law where you live, and you are fully responsible for that. If you test an app you do not own, you are responsible for getting written permission first.</p>
+
+    <h2>5. What you are not allowed to do</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>use BioAudit to attack, break into or harm any app, device, person or organisation</li>
+      <li>use it to steal data, bypass someone's authentication, or help others do so</li>
+      <li>reverse engineer, copy, resell or redistribute the app or the website content, except where the law or an open-source licence allows it</li>
+      <li>try to break, overload or get around our website, backend, login system or plan limits</li>
+      <li>upload malware or anything else meant to damage our systems</li>
+      <li>use another person's account, or pretend to be someone else</li>
+      <li>use BioAudit in a way that breaks the law</li>
+    </ul>
+
+    <h2>6. Your data, scan reports and privacy</h2>
+    <p>We collect only what we need to run the service:</p>
+    <ul>
+      <li><strong>Account details:</strong> such as your name, email address and plan.</li>
+      <li><strong>Scan reports and results:</strong> the findings BioAudit produces when you test an app, which you can view on your dashboard.</li>
+      <li><strong>Usage information:</strong> basic technical details about how the website and app are used, so we can fix problems.</li>
+    </ul>
+    <p>We use this to run your account, show your reports, keep the service secure and improve BioAudit. We do not sell your data.</p>
+    <p>Scan reports can contain sensitive information about the apps you test. Only upload or scan apps you have the right to scan (see section 4), and be careful about sharing reports with others. You can ask us to delete your account and your data using the contact address at the end of these terms.</p>
+    <p>Some features send data to services run by other companies (see section 7). We try to keep your data secure, but no online service can promise perfect security.</p>
+
+    <h2>7. Third-party services</h2>
+    <p>BioAudit relies on other services, and their own terms apply when you use them through us:</p>
+    <ul>
+      <li><strong>Firebase (Google)</strong> for hosting the website, sign-in and storing account data.</li>
+      <li><strong>Grok API (xAI)</strong> for the AI features, which run on our server.</li>
+      <li><strong>Stripe</strong> for the payment flow, currently in test mode only.</li>
+      <li><strong>ADB (Android Debug Bridge)</strong>, which you install on your own PC for dynamic testing.</li>
+    </ul>
+    <p>We do not control these services and are not responsible if they go down or change.</p>
+
+    <h2>8. Ownership</h2>
+    <p>The BioAudit name, logo, website and software belong to the BioAudit project team, apart from any open-source or third-party parts, which stay under their own licences. We give you a personal, non-transferable right to use the app and website while your account is active.</p>
+    <p>You keep ownership of your own apps and of anything you upload. The scan reports made for you are yours to use, but you give us permission to store and process them so the service works.</p>
+
+    <h2>9. No guarantees and limits on our responsibility</h2>
+    <p>BioAudit is a student project. We do our best to make it accurate, but we are unable to promise it will find every vulnerability, give no false results, or be available all the time. A clean report does not prove an app is secure, and you should not rely on BioAudit alone for security decisions.</p>
+    <p>The service is provided "as is". To the extent the law allows, we are not responsible for losses that come from using BioAudit, including damage to a device or app being tested, lost data, downtime, or anything that happens because you tested something you were not authorised to test. Nothing in these terms limits any rights you have under the law that cannot be waived.</p>
+
+    <h2>10. Suspending or closing accounts</h2>
+    <p>You can stop using BioAudit and ask us to close your account at any time. We can suspend or close an account if you break these terms, especially sections 4 and 5, or if we need to protect the service or other people. Because this is a project, we may also change or end the service, and we will try to give notice when we can.</p>
+
+    <h2>11. Changes to these terms</h2>
+    <p>We may update these terms from time to time. The date at the top shows when they were last changed. If BioAudit is used after an update, you accept the new version. For big changes, we will inform you on the website or by email.</p>
+
+    <h2>12. Governing law</h2>
+    <p>These terms are governed by the laws of Singapore. Any dispute will be handled by the courts of Singapore.</p>
+
+    <h2>13. Contact</h2>
+    <p>Questions about these terms, or requests to delete your account or data, can be sent to <a href="mailto:fyp26s314@gmail.com">fyp26s314@gmail.com</a>.</p>
+
+    <p class="back">You may close this tab.</p>
+  </main>
+
+</body>
+</html>
