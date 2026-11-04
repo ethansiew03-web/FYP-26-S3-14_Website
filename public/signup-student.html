@@ -1,0 +1,285 @@
+// Signup page for Student Plan
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Sign Up | BioAudit</title>
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+
+  <video class="bg-video" autoplay muted loop playsinline poster="assets/bg-stars.jpg" aria-hidden="true">
+    <source src="assets/bg-stars.mp4" type="video/mp4">
+  </video>
+
+  <header class="top">
+    <a class="brand" href="index.html"><img src="assets/favicon.png" alt=""><span>BIOAUDIT</span></a>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <h1>Create a Student account</h1>
+      <p class="lead">BioAudit is free for students. We email a six-digit code to your university address to confirm you study there.</p>
+
+      <form id="signup-form" novalidate>
+        <label class="field" for="fullName">Name *</label>
+        <input type="text" id="fullName" autocomplete="name" required />
+
+        <label class="field" for="university">University *</label>
+        <select id="university" required disabled>
+          <option value="">Loading universities…</option>
+        </select>
+        <p class="hint" id="university-hint"></p>
+
+        <label class="field" for="email">University email address *</label>
+        <input type="email" id="email" autocomplete="email" required />
+
+        <label class="field" for="password">Password *</label>
+        <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" required />
+
+        <label class="field" for="confirmPassword">Confirm password *</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required />
+
+        <button class="btn btn-secondary" type="button" id="send-code-btn">Send code</button>
+
+        <div id="code-section" hidden>
+          <label class="field" for="code">Six-digit code *</label>
+          <input type="text" id="code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code" />
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="terms" required />
+          <label for="terms">I agree to the subscription terms and conditions. * <a href="terms.html" target="_blank" rel="noopener">Read T&amp;C</a></label>
+        </div>
+
+        <button class="btn" type="submit" id="create-btn" disabled>Create account</button>
+        <p id="message" role="status"></p>
+
+        <p class="switch">Already have an account? <a href="login.html">Log in</a></p>
+      </form>
+    </div>
+  </main>
+
+  <!-- Load config FIRST -->
+  <script src="firebase-config.js"></script>
+  <script src="api-config.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const app = initializeApp(window.firebaseConfig);
+    const auth = getAuth(app);
+
+    const $ = (id) => document.getElementById(id);
+    const form = $("signup-form");
+    const messageEl = $("message");
+    const universitySelect = $("university");
+    const sendBtn = $("send-code-btn");
+    const createBtn = $("create-btn");
+    const NOT_LISTED = "__not_listed__";
+    const BOUNCE_WATCH_MS = 2 * 60 * 1000;   // how long we listen for "this address does not exist"
+    const RESEND_SECONDS = 60;               // the server allows one code per address per minute
+
+    let universities = [];
+    let sentTo = null;      // the address the current code was sent to
+    let sendId = null;      // lets us ask the server whether that email bounced
+    let watchToken = 0;     // changes on every send, so an old watcher stops itself
+    let cooldownTimer = null;
+
+    /* ===== Talking to the BioAudit backend ===== */
+    async function api(method, path, body) {
+      const base = (window.bioauditApi && window.bioauditApi.base || "").trim().replace(/\/+$/, "");
+      if (!base) throw new Error("The BioAudit server address isn't set up. Please contact the team.");
+
+      let response;
+      try {
+        response = await fetch(base + path, {
+          method,
+          headers: body !== undefined ? { "Content-Type": "application/json" } : {},
+          body: body !== undefined ? JSON.stringify(body) : undefined
+        });
+      } catch (err) {
+        console.error("BioAudit server unreachable:", err);
+        throw new Error("Couldn't reach the BioAudit server. Please try again shortly.");
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const e = data.error || {};
+        const details = (e.details || []).map((d) => d.field + ": " + d.message).join(". ");
+        throw new Error([e.message, details].filter(Boolean).join(" ") || "Something went wrong. Please try again.");
+      }
+      return data;
+    }
+
+    function show(text, ok = false) {
+      messageEl.textContent = text;
+      messageEl.className = ok ? "ok" : "";
+    }
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const cleanEmail = () => $("email").value.trim().toLowerCase();
+
+    /* ===== University list ===== */
+    function selectedUniversity() {
+      return universities.find((u) => u.id === universitySelect.value) || null;
+    }
+
+    function updateUniversityHint() {
+      const hint = $("university-hint");
+      if (!universitySelect.value) { hint.textContent = ""; return; }
+      const uni = selectedUniversity();
+      if (!uni) {
+        hint.textContent = "Use the email address your university gave you. Most end in .ac.uk, .edu or similar.";
+        return;
+      }
+      hint.textContent = "Use your " + uni.name + " email address. It should end in " +
+        uni.domains.map((d) => "@" + d).join(" or ") + ".";
+    }
+
+    async function loadUniversities() {
+      try {
+        const data = await api("GET", "/universities");
+        universities = (data.universities || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+        universitySelect.innerHTML = "";
+        universitySelect.add(new Option("Choose your university", ""));
+        universities.forEach((u) => universitySelect.add(new Option(u.name, u.id)));
+        universitySelect.add(new Option("My university isn't listed", NOT_LISTED));
+        universitySelect.disabled = false;
+      } catch (err) {
+        universitySelect.innerHTML = "";
+        universitySelect.add(new Option("Couldn't load universities", ""));
+        show(err.message);
+      }
+    }
+
+    /* ===== Changing the email or university invalidates a code already sent ===== */
+    function resetCode() {
+      watchToken++;
+      sentTo = null;
+      sendId = null;
+      $("code-section").hidden = true;
+      $("code").value = "";
+      createBtn.disabled = true;
+    }
+    universitySelect.addEventListener("change", () => { updateUniversityHint(); resetCode(); });
+    $("email").addEventListener("input", () => { if (sentTo && cleanEmail() !== sentTo) resetCode(); });
+
+    /* ===== Send code ===== */
+    function startCooldown() {
+      clearInterval(cooldownTimer);
+      let left = RESEND_SECONDS;
+      sendBtn.disabled = true;
+      const tick = () => {
+        if (left <= 0) {
+          clearInterval(cooldownTimer);
+          sendBtn.disabled = false;
+          sendBtn.textContent = "Resend code";
+          return;
+        }
+        sendBtn.textContent = "Resend code (" + left + "s)";
+        left--;
+      };
+      tick();
+      cooldownTimer = setInterval(tick, 1000);
+    }
+
+    // The server only finds out an address doesn't exist once the mail server answers, a few
+    // seconds after the code is sent. So we ask every few seconds for a couple of minutes.
+    async function watchForBounce(email, id, token) {
+      const stopAt = Date.now() + BOUNCE_WATCH_MS;
+      while (Date.now() < stopAt && token === watchToken) {
+        await sleep(4000);
+        if (token !== watchToken) return;
+        try {
+          const result = await api("POST", "/auth/register/code-status", { email, sendId: id });
+          if (result.status === "bounced") {
+            resetCode();
+            clearInterval(cooldownTimer);
+            sendBtn.disabled = false;
+            sendBtn.textContent = "Send code";
+            show(result.message || (email + " could not receive the code. Check the address and try again."));
+            return;
+          }
+        } catch (err) {
+          console.warn("Could not check the code status:", err);
+        }
+      }
+    }
+
+    sendBtn.addEventListener("click", async () => {
+      show("");
+      const email = cleanEmail();
+      if (!universitySelect.value) return show("Choose your university first.");
+      if (!email) return show("Enter your university email address.");
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending…";
+      try {
+        const body = { email };
+        if (universitySelect.value !== NOT_LISTED) body.universityId = universitySelect.value;
+        const result = await api("POST", "/auth/register/send-code", body);
+
+        sentTo = email;
+        sendId = result.sendId;
+        const token = ++watchToken;
+        $("code-section").hidden = false;
+        createBtn.disabled = false;
+        show(result.message || ("A code has been sent to " + email + "."), true);
+        startCooldown();
+        if (sendId) watchForBounce(email, sendId, token);
+      } catch (err) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = sentTo ? "Resend code" : "Send code";
+        show(err.message);
+      }
+    });
+
+    /* ===== Create account ===== */
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      show("");
+
+      const fullName = $("fullName").value.trim();
+      const email = cleanEmail();
+      const password = $("password").value;
+      const code = $("code").value.trim();
+
+      if (!fullName) return show("Enter your name.");
+      if (!sentTo || sentTo !== email) return show("Send a code to this email address first.");
+      if (password.length < 8) return show("Use a password of at least 8 characters.");
+      if (password !== $("confirmPassword").value) return show("Passwords do not match.");
+      if (!/^\d{6}$/.test(code)) return show("Enter the six-digit code from the email.");
+      if (!$("terms").checked) return show("Please accept the terms and conditions.");
+
+      createBtn.disabled = true;
+      createBtn.textContent = "Creating account…";
+      try {
+        const body = { email, password, displayName: fullName, code, tosAccepted: true };
+        if (universitySelect.value !== NOT_LISTED) body.universityId = universitySelect.value;
+        await api("POST", "/auth/register", body);
+
+        // The backend created the account and marked it verified. Now sign in here so the
+        // dashboard knows who is logged in.
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        createBtn.disabled = false;
+        createBtn.textContent = "Create account";
+        show(err.message);
+      }
+    });
+
+    loadUniversities();
+  </script>
+
+</body>
+</html>

@@ -439,7 +439,7 @@
 
           <div style="margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap">
             <button class="btn" type="button" id="sub-action">Upgrade to Organisation</button>
-            <button class="btn btn-ghost" type="button" id="sub-portal" hidden>Manage billing online</button>
+            <button class="btn btn-ghost" type="button" id="sub-portal" hidden>Manage billing</button>
             <a class="btn btn-ghost" href="plans.html">Compare plans</a>
           </div>
           <p class="muted" id="sub-note" style="margin-top: 18px; font-size: 0.82rem; line-height: 1.5" hidden></p>
@@ -785,17 +785,17 @@
         banner.hidden = false;
         banner.className = "banner " + (s.state === "ended" ? "bad" : "warn");
         if (s.state === "cancelling") {
-          $("expiry-banner-text").textContent = "The subscription is cancelled. You and every member keep access until " + when +
+          $("expiry-banner-text").textContent = "Your subscription has been cancelled. You and every member keep access until " + when +
             ". After that, all accounts in the organisation are suspended until it is renewed.";
           bannerBtn.textContent = "Keep subscription";
           bannerBtn.onclick = () => runAction(bannerBtn, doResume);
         } else if (s.state === "ended") {
-          $("expiry-banner-text").textContent = "The subscription has ended, so you and every member of the organisation are suspended in the BioAudit app until it is renewed." +
+          $("expiry-banner-text").textContent = "Your subscription has ended. You and every member of the organisation are suspended in the BioAudit app until it is renewed." +
             (admin ? "" : " Ask your organisation's admin to renew it.");
           bannerBtn.textContent = "Renew subscription";
           bannerBtn.onclick = () => runAction(bannerBtn, doRenew);
         } else {
-          $("expiry-banner-text").textContent = "Your organisation's yearly subscription hasn't been paid yet. " +
+          $("expiry-banner-text").textContent = "Your organisation's yearly subscription has not been paid yet. " +
             (admin ? "Pay for it to start using BioAudit and invite your team." : "Ask your organisation's admin to pay for it.");
           bannerBtn.textContent = "Pay for subscription";
           bannerBtn.onclick = () => runAction(bannerBtn, doRenew);
@@ -822,13 +822,12 @@
         : s.state === "ended" && endPassed ? "Ended " + when : "";
 
       $("sub-message").textContent = {
-        active: "Your organisation's subscription is active. It renews and is charged automatically on " + when + ", and every year after that, until it is cancelled.",
-        cancelling: "The subscription is cancelled and will not renew. You and every member keep access until " + when +
+        cancelling: "Your subscription has been cancelled. You and every member keep access until " + when +
           ". After that, all accounts in the organisation are suspended until the subscription is renewed." +
           (admin ? " You can undo this any time before then." : ""),
-        ended: "The subscription has ended. Your account details and reports are still here, but you and every member are suspended in the BioAudit app until it is renewed." +
+        ended: "Your subscription has ended. You and every member are suspended in the BioAudit app until it is renewed." +
           (admin ? "" : " Ask your organisation's admin."),
-        unpaid: "Your organisation's yearly subscription hasn't been paid yet." +
+        unpaid: "Your organisation's yearly subscription has not been paid yet." +
           (admin ? " Pay for it to start using BioAudit and invite your team." : " It needs to be paid by your organisation's admin.")
       }[s.state];
 
@@ -837,7 +836,7 @@
       action.hidden = !admin;
       action.disabled = false;
       if (s.state === "active") {
-        action.textContent = "Cancel subscription…";
+        action.textContent = "Cancel subscription";
         action.className = "btn btn-ghost";
         action.onclick = openCancelDialog;
       } else if (s.state === "cancelling") {
@@ -853,9 +852,9 @@
 
       const note = $("sub-note");
       note.hidden = false;
-      note.textContent = "One subscription covers the whole organisation: the admin and every member share the same paid year. " +
-        "It renews and is charged automatically each year until it is cancelled. Cancelling keeps everyone's access until the end of the year " +
-        "already paid; after that, all accounts in the organisation are suspended until the subscription is renewed. Only admins can cancel.";
+      note.textContent = "*One subscription covers the whole organisation: the admin and every member share the same paid year." +
+        "It renews and is charged automatically each year until it is cancelled. Cancelling keeps everyone's access until the end of the " +
+        "paid year; after that, all accounts in the organisation are suspended until the subscription is renewed. Only admins can cancel.";
 
       const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
       $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");

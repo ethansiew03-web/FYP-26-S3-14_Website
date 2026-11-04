@@ -1,0 +1,139 @@
+// Signup page for Organisation Plan
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organisation Sign Up | BioAudit</title>
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+
+  <video class="bg-video" autoplay muted loop playsinline poster="assets/bg-stars.jpg" aria-hidden="true">
+    <source src="assets/bg-stars.mp4" type="video/mp4">
+  </video>
+
+  <header class="top">
+    <a class="brand" href="index.html"><img src="assets/favicon.png" alt=""><span>BIOAUDIT</span></a>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <h1>Create an Organisation account</h1>
+      <p class="lead">$34.99/year. You become the admin and can invite your team to join in the BioAudit app.</p>
+
+      <form id="signup-form">
+        <label class="field" for="fullName">Name *</label>
+        <input type="text" id="fullName" autocomplete="name" required />
+
+        <label class="field" for="email">Email address *</label>
+        <input type="email" id="email" autocomplete="email" required />
+
+        <label class="field" for="password">Password *</label>
+        <input type="password" id="password" placeholder="At least 6 characters" autocomplete="new-password" required />
+
+        <label class="field" for="confirmPassword">Confirm password *</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required />
+
+        <label class="field" for="organisationName">Organisation name *</label>
+        <input type="text" id="organisationName" placeholder="Give your organisation a name" required />
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="terms" required />
+          <label for="terms">I agree to the subscription terms and conditions. * <a href="terms.html" target="_blank" rel="noopener">Read T&amp;C</a></label>
+        </div>
+
+        <button class="btn" type="submit">Create account</button>
+        <p id="message" role="status"></p>
+
+        <p class="switch">Already have an account? <a href="login.html">Log in</a></p>
+      </form>
+    </div>
+  </main>
+
+  <!-- Load config FIRST -->
+  <script src="firebase-config.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { startCheckout } from "./checkout.js";
+
+    const app = initializeApp(window.firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const form = document.getElementById("signup-form");
+    const messageEl = document.getElementById("message");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      messageEl.textContent = "";
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const organisationName = document.getElementById("organisationName").value.trim();
+
+      if (password !== confirmPassword) {
+        messageEl.textContent = "Passwords do not match.";
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+
+        await setDoc(doc(db, "users", uid), {
+          displayName: fullName,
+          email,
+          organisationId: null,
+          organisationName,
+          role: "member",
+          scanCount: 0,
+          subscription: {
+            status: "none",
+            startedAt: null,
+            cancelledAt: null
+          },
+          tier: "free",
+          requestedPlan: "organisation",
+          disabled: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        // Go and pay. The account is upgraded by the server once Stripe confirms payment.
+        // If checkout can't open, the dashboard offers a "Complete payment" button instead.
+        messageEl.textContent = "Account created. Opening checkout…";
+        try {
+          await startCheckout(db, uid);
+          return;
+        } catch (checkoutErr) {
+          console.error(checkoutErr);
+        }
+        window.location.href = "dashboard.html";
+
+      } catch (err) {
+        messageEl.textContent = err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>
