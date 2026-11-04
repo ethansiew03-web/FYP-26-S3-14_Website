@@ -11,5 +11,5 @@
  * (for example https://bioaudit.me) to the backend's CORS_ORIGINS setting.
  */
 window.bioauditApi = {
-  base: "https://final-year-project-8saa.onrender.com/api"
+  base: "https://bioaudit-api-391854054876.us-central1.run.app/api"
 };
