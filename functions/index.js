@@ -91,19 +91,9 @@ exports.syncSubscriptionTier = onDocumentWritten(
       organisationId = result.orgId;
       role = result.newRole;
     } else if (ENDED.includes(status)) {
-      // Ending the plan drops the tier only. The organisation and its members
-      // are left alone, as the backend does when a subscription is cancelled.
-      if (profile.tier === "free" && profile.subscription && profile.subscription.status === "cancelled") return;
-      tier = "free";
-      await userRef.update({
-        tier,
-        subscription: {
-          status: "cancelled",
-          startedAt: (profile.subscription && profile.subscription.startedAt) || null,
-          cancelledAt: FieldValue.serverTimestamp()
-        },
-        updatedAt: FieldValue.serverTimestamp()
-      });
+      // Account type stays the same even when paid year is over
+      logger.info(`Subscription for ${uid} ended ("${status}"); accounts left unchanged`);
+      return;
     } else {
       // trialing, incomplete, past_due, paused: leave the account as it is
       logger.info(`Subscription for ${uid} is "${status}"; no change`);

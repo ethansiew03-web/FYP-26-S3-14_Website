@@ -240,6 +240,33 @@
     .features li + li { margin-top: 10px; }
     .features svg { flex: none; width: 16px; height: 16px; margin-top: 2px; stroke: var(--orange); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
+    /* Cancel confirmation dialog */
+    dialog {
+      background: var(--panel);
+      color: var(--mint);
+      border: 1px solid var(--cream);
+      border-radius: 10px;
+      padding: 24px;
+      width: min(480px, calc(100vw - 40px));
+    }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+    dialog h2 { margin-bottom: 12px; }
+    dialog p { font-size: 0.9rem; line-height: 1.55; color: var(--dim); }
+    dialog label { display: block; margin-top: 16px; font-size: 0.85rem; color: var(--dim); }
+    dialog textarea {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      background: #07090C;
+      color: var(--mint);
+      border: 1px solid var(--line-2);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      resize: vertical;
+    }
+    .dialog-actions { margin-top: 20px; display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
     /* Loading screen */
@@ -412,8 +439,10 @@
 
           <div style="margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap">
             <button class="btn" type="button" id="sub-action">Upgrade to Organisation</button>
+            <button class="btn btn-ghost" type="button" id="sub-portal" hidden>Manage billing online</button>
             <a class="btn btn-ghost" href="plans.html">Compare plans</a>
           </div>
+          <p class="muted" id="sub-note" style="margin-top: 18px; font-size: 0.82rem; line-height: 1.5" hidden></p>
         </div>
 
         <div class="card" style="margin-top: 20px">
@@ -425,8 +454,24 @@
     </main>
   </div>
 
+  <!-- Cancel subscription: confirm first, because it affects everyone in the organisation -->
+  <dialog id="cancel-dialog" aria-labelledby="cancel-title">
+    <form method="dialog" id="cancel-form">
+      <h2 id="cancel-title">Cancel subscription?</h2>
+      <p id="cancel-text"></p>
+      <label for="cancel-reason">Reason (optional)</label>
+      <textarea id="cancel-reason" rows="3" maxlength="500"></textarea>
+      <p class="checkout-error" id="cancel-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="button" id="cancel-back">Keep subscription</button>
+        <button class="btn" type="submit" id="cancel-confirm">Cancel subscription</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- Load config FIRST -->
   <script src="firebase-config.js"></script>
+  <script src="api-config.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -447,6 +492,13 @@
       getDocs
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
     import { startCheckout } from "./checkout.js";
+    import {
+      loadMyOrganisation,
+      cancelSubscription,
+      resumeSubscription,
+      billingPortalUrl,
+      renewalUrl
+    } from "./billing.js";
 
     const app = initializeApp(window.firebaseConfig);
     const auth = getAuth(app);
@@ -545,6 +597,7 @@
     }
 
     function renderPlan() {
+      if (renderOrganisationView()) return;
       if (isPending()) { renderPending(); return; }
       const key = planKey();
       const plan = PLANS[key];
@@ -644,6 +697,272 @@
       const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
       $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
     }
+
+    /* ===== Organisation subscription: cancel, keep and renew (same rules as the BioAudit app) =====
+     *
+     * One yearly subscription covers the whole organisation, and the BioAudit server (the
+     * same one the desktop app uses) decides its state:
+     *   active     paid and set to renew automatically each year
+     *   cancelling cancelled; everyone keeps access until the end of the paid year
+     *   ended      the paid year is over; the admin and every member are suspended
+     *   unpaid     signed up in the app but not paid yet
+     *   none       not billed (an organisation from before billing)
+     *
+     * This only adds to the plan view above. renderPlan() hands over to renderOrganisation()
+     * when the server reports one of the first four states; in every other case the original
+     * code below runs exactly as before.
+     */
+    let org = null;            // the user's organisation from the BioAudit server, with its subscription state
+    let orgFor = null;         // which organisation id `org` was loaded for
+    let orgLoadFailed = false; // the server couldn't be reached, so the page falls back to the account record
+    let busy = false;
+
+    function orgSub() { return org && org.subscription ? org.subscription : null; }
+    function isOrgAdmin() { return !!org && org.yourRole === "admin"; }
+    function orgBilled() {
+      const s = orgSub();
+      return !!s && ["unpaid", "active", "cancelling", "ended"].includes(s.state);
+    }
+
+    /* Called first by renderPlan(). Returns true when it has drawn the organisation view. */
+    function renderOrganisationView() {
+      // Put back what the organisation view may have hidden or restyled
+      $("banner-action").hidden = false;
+      $("sub-action").className = "btn";
+      $("sub-portal").hidden = true;
+      $("sub-note").hidden = true;
+      if (orgLoadFailed && !org && profile.organisationId) {
+        $("sub-error").textContent = "Couldn't load your organisation's subscription from the BioAudit server, so this page may be out of date.";
+      }
+      if (!orgBilled()) return false;
+      renderOrganisation();
+      return true;
+    }
+
+    function renderOrganisation() {
+      const s = orgSub();
+      const admin = isOrgAdmin();
+      const plan = PLANS.organisation;
+      const end = toDate(s.periodEnd);
+      const when = end ? fmtDate(end) : "the end of the paid year";
+      const daysLeft = end ? Math.ceil((end - new Date()) / 86400000) : 0;
+      const live = s.state === "active" || s.state === "cancelling";
+      // Stripe can leave the old period end on a subscription that was ended early, so
+      // only call it "Ended on <date>" when that date has actually passed
+      const endPassed = !!end && end <= new Date();
+
+      // Account tab (renderProfile() ran just before this and wrote the plain plan name)
+      const label = { active: "active", cancelling: "cancelled, ends " + when, ended: "suspended", unpaid: "payment needed" }[s.state];
+      $("ac-plan").textContent = "Organisation (" + label + ")";
+      if (org.yourRole) {
+        $("ac-role-wrap").hidden = false;
+        $("ac-role").textContent = cap(org.yourRole);
+      }
+
+      // Overview cards
+      $("ov-plan").textContent = plan.name;
+      $("ov-plan-note").textContent = {
+        active: "Renews automatically each year",
+        cancelling: "Will not renew",
+        ended: "Suspended",
+        unpaid: "Payment needed"
+      }[s.state];
+      $("ov-days").textContent = live && daysLeft > 0 ? daysText(daysLeft) : (s.state === "ended" ? "Ended" : "–");
+      $("ov-days-note").textContent = {
+        active: "Renews " + when,
+        cancelling: "Access ends " + when,
+        ended: endPassed ? "Ended " + when : "Subscription ended",
+        unpaid: "Starts once payment is complete"
+      }[s.state];
+
+      // Banner
+      const banner = $("expiry-banner");
+      const bannerBtn = $("banner-action");
+      bannerBtn.hidden = !admin;
+      if (s.state === "active") {
+        banner.hidden = true;
+      } else {
+        banner.hidden = false;
+        banner.className = "banner " + (s.state === "ended" ? "bad" : "warn");
+        if (s.state === "cancelling") {
+          $("expiry-banner-text").textContent = "The subscription is cancelled. You and every member keep access until " + when +
+            ". After that, all accounts in the organisation are suspended until it is renewed.";
+          bannerBtn.textContent = "Keep subscription";
+          bannerBtn.onclick = () => runAction(bannerBtn, doResume);
+        } else if (s.state === "ended") {
+          $("expiry-banner-text").textContent = "The subscription has ended, so you and every member of the organisation are suspended in the BioAudit app until it is renewed." +
+            (admin ? "" : " Ask your organisation's admin to renew it.");
+          bannerBtn.textContent = "Renew subscription";
+          bannerBtn.onclick = () => runAction(bannerBtn, doRenew);
+        } else {
+          $("expiry-banner-text").textContent = "Your organisation's yearly subscription hasn't been paid yet. " +
+            (admin ? "Pay for it to start using BioAudit and invite your team." : "Ask your organisation's admin to pay for it.");
+          bannerBtn.textContent = "Pay for subscription";
+          bannerBtn.onclick = () => runAction(bannerBtn, doRenew);
+        }
+      }
+
+      // Subscription tab
+      $("sub-name").textContent = plan.name;
+      $("sub-price").textContent = plan.price;
+      const badge = $("sub-badge");
+      badge.textContent = { active: "Active", cancelling: "Cancelled", ended: "Suspended", unpaid: "Payment needed" }[s.state];
+      badge.className = "badge " + ({ active: "good", cancelling: "warn", ended: "bad", unpaid: "warn" }[s.state]);
+
+      // The server gives only the end of the paid year, so the year is counted back from it
+      let pct = s.state === "ended" ? 100 : 0;
+      if (live && end) {
+        const start = new Date(end);
+        start.setFullYear(start.getFullYear() - 1);
+        pct = Math.min(100, Math.max(0, ((new Date() - start) / (end - start)) * 100));
+      }
+      $("sub-bar").style.width = pct + "%";
+      $("sub-start").textContent = "";
+      $("sub-end").textContent = live && end ? (s.state === "cancelling" ? "Ends " : "Renews ") + when
+        : s.state === "ended" && endPassed ? "Ended " + when : "";
+
+      $("sub-message").textContent = {
+        active: "Your organisation's subscription is active. It renews and is charged automatically on " + when + ", and every year after that, until it is cancelled.",
+        cancelling: "The subscription is cancelled and will not renew. You and every member keep access until " + when +
+          ". After that, all accounts in the organisation are suspended until the subscription is renewed." +
+          (admin ? " You can undo this any time before then." : ""),
+        ended: "The subscription has ended. Your account details and reports are still here, but you and every member are suspended in the BioAudit app until it is renewed." +
+          (admin ? "" : " Ask your organisation's admin."),
+        unpaid: "Your organisation's yearly subscription hasn't been paid yet." +
+          (admin ? " Pay for it to start using BioAudit and invite your team." : " It needs to be paid by your organisation's admin.")
+      }[s.state];
+
+      // Buttons: only the admin gets them
+      const action = $("sub-action");
+      action.hidden = !admin;
+      action.disabled = false;
+      if (s.state === "active") {
+        action.textContent = "Cancel subscription…";
+        action.className = "btn btn-ghost";
+        action.onclick = openCancelDialog;
+      } else if (s.state === "cancelling") {
+        action.textContent = "Keep subscription";
+        action.onclick = () => runAction(action, doResume);
+      } else {
+        action.textContent = s.state === "unpaid" ? "Pay for subscription" : "Renew subscription";
+        action.onclick = () => runAction(action, doRenew);
+      }
+      const portal = $("sub-portal");
+      portal.hidden = !(admin && s.state !== "unpaid");
+      portal.onclick = () => runAction(portal, doPortal);
+
+      const note = $("sub-note");
+      note.hidden = false;
+      note.textContent = "One subscription covers the whole organisation: the admin and every member share the same paid year. " +
+        "It renews and is charged automatically each year until it is cancelled. Cancelling keeps everyone's access until the end of the year " +
+        "already paid; after that, all accounts in the organisation are suspended until the subscription is renewed. Only admins can cancel.";
+
+      const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
+      $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
+    }
+
+    /* ----- Actions (they call the BioAudit server, like the app does) ----- */
+    function showNotice(text, kind) {
+      const box = $("notice");
+      box.hidden = false;
+      box.className = "banner " + kind;
+      $("notice-text").textContent = text;
+    }
+    async function runAction(btn, work) {
+      if (busy) return;
+      busy = true;
+      btn.disabled = true;
+      $("sub-error").textContent = "";
+      try {
+        await work();
+      } catch (err) {
+        console.error(err);
+        const message = err.message || "Something went wrong. Please try again.";
+        $("sub-error").textContent = message;
+        showNotice(message, "warn");
+      } finally {
+        btn.disabled = false;
+        busy = false;
+      }
+    }
+    async function doResume() {
+      const result = await resumeSubscription(currentUser, org.id);
+      await refreshOrg();
+      showNotice(result.message || "The subscription will renew automatically at the end of the paid year.", "good");
+    }
+    async function doRenew() {
+      window.location.assign(await renewalUrl(currentUser, org.id));
+    }
+    async function doPortal() {
+      window.location.assign(await billingPortalUrl(currentUser, org.id));
+    }
+
+    /* Cancel: confirm first, because it affects every member of the organisation */
+    function openCancelDialog() {
+      const end = toDate(orgSub().periodEnd);
+      const when = end ? fmtDate(end) : "the end of the paid year";
+      $("cancel-text").textContent = "It will not renew, and you will not be charged again. You and every member keep access until " + when +
+        ". After that, all accounts in the organisation are suspended until the subscription is renewed. You can undo this any time before " + when + ".";
+      $("cancel-reason").value = "";
+      $("cancel-error").textContent = "";
+      $("cancel-dialog").showModal();
+    }
+    $("cancel-back").addEventListener("click", () => $("cancel-dialog").close());
+    $("cancel-form").addEventListener("submit", async (e) => {
+      e.preventDefault(); // keep the dialog open until the server answers, so an error can be shown
+      if (busy || !org) return;
+      busy = true;
+      const confirmBtn = $("cancel-confirm");
+      confirmBtn.disabled = true;
+      $("cancel-error").textContent = "";
+      try {
+        const result = await cancelSubscription(currentUser, org.id, $("cancel-reason").value.trim());
+        $("cancel-dialog").close();
+        await refreshOrg();
+        showNotice(result.message || "The subscription will not renew.", "warn");
+      } catch (err) {
+        console.error(err);
+        $("cancel-error").textContent = err.message || "Couldn't cancel the subscription. Please try again.";
+      } finally {
+        confirmBtn.disabled = false;
+        busy = false;
+      }
+    });
+
+    /* ----- Loading the organisation from the BioAudit server ----- */
+    async function refreshOrg() {
+      if (!currentUser || !profile.organisationId) {
+        org = null;
+        orgLoadFailed = false;
+        return;
+      }
+      try {
+        org = await loadMyOrganisation(currentUser);
+        orgLoadFailed = false;
+      } catch (err) {
+        console.error("Could not load the organisation:", err);
+        orgLoadFailed = true; // keep whatever was loaded before
+      }
+      if (started) {
+        renderProfile();
+        renderPlan();
+      }
+    }
+    // Once, when the page first loads: the page waits for this, so it doesn't flash the wrong plan first
+    function startOrganisation() {
+      orgFor = profile.organisationId || null;
+      return refreshOrg();
+    }
+    // On every profile update: notice an organisation joined or created while the page is open
+    function syncOrganisation() {
+      if (!started || (profile.organisationId || null) === orgFor) return;
+      orgFor = profile.organisationId || null;
+      refreshOrg();
+    }
+    // Pick up a cancel or renewal made in the app when the person comes back to this tab
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && started) refreshOrg();
+    });
 
     /* ===== Account details (read-only) ===== */
     function renderProfile() {
@@ -866,10 +1185,13 @@
         renderProfile();
         renderPlan();
         showCheckoutNotice();
+        syncOrganisation();
 
         if (!started) {
           started = true;
+          const orgReady = startOrganisation();
           await loadScans();
+          await orgReady;
           $("loading").hidden = true;
           $("app").hidden = false;
           const start = location.hash.replace("#", "");
