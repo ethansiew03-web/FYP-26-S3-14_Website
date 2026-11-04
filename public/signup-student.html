@@ -1,4 +1,3 @@
-// Signup page for Student Plan
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +23,7 @@
   <main class="wrap">
     <div class="card">
       <h1>Create a Student account</h1>
-      <p class="lead">BioAudit is free for students. We email a six-digit code to your university address to confirm you study there.</p>
+      <p class="lead">We will email a six-digit code to your university email address to verify your student status.</p>
 
       <form id="signup-form" novalidate>
         <label class="field" for="fullName">Name *</label>
@@ -32,7 +31,7 @@
 
         <label class="field" for="university">University *</label>
         <select id="university" required disabled>
-          <option value="">Loading universities…</option>
+          <option value="">Loading Universities</option>
         </select>
         <p class="hint" id="university-hint"></p>
 
@@ -138,11 +137,10 @@
       if (!universitySelect.value) { hint.textContent = ""; return; }
       const uni = selectedUniversity();
       if (!uni) {
-        hint.textContent = "Use the email address your university gave you. Most end in .ac.uk, .edu or similar.";
+        hint.textContent = "Your university email address should end in .ac.uk, .edu or similar.";
         return;
       }
-      hint.textContent = "Use your " + uni.name + " email address. It should end in " +
-        uni.domains.map((d) => "@" + d).join(" or ") + ".";
+      hint.textContent = "";
     }
 
     async function loadUniversities() {
