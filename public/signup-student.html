@@ -24,19 +24,19 @@
   <main class="wrap">
     <div class="card">
       <h1>Create a Student account</h1>
-      <p class="lead">BioAudit is free for students. We email a six-digit code to your university address to confirm you study there.</p>
+      <p class="lead">We will email a six-digit code to your school email address to verify your student status.</p>
 
       <form id="signup-form" novalidate>
         <label class="field" for="fullName">Name *</label>
         <input type="text" id="fullName" autocomplete="name" required />
 
-        <label class="field" for="university">University *</label>
+        <label class="field" for="university">School *</label>
         <select id="university" required disabled>
           <option value="">Loading universities…</option>
         </select>
         <p class="hint" id="university-hint"></p>
 
-        <label class="field" for="email">University email address *</label>
+        <label class="field" for="email">School email address *</label>
         <input type="email" id="email" autocomplete="email" required />
 
         <label class="field" for="password">Password *</label>
