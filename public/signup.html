@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Up | BioAudit</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/signup-choice.css">
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<header class="site-header">
+  <a class="logo" href="index.html"><img src="assets/logo.png" alt="BioAudit home"></a>
+  <nav>
+    <ul>
+      <li><a href="about.html">About</a></li>
+      <li><a href="plans.html">Plans</a></li>
+      <li><a href="learn-more.html">More</a></li>
+    </ul>
+    <a class="btn" href="signup.html">Sign Up</a>
+    <a class="btn" href="login.html">Login</a>
+  </nav>
+</header>
+
+<main>
+  <section class="choose">
+    <h1 class="reveal">Sign up</h1>
+    <p class="sub reveal">Choose the account that fits you</p>
+
+    <div class="options">
+        <div class="option reveal">
+            <h2>Student</h2>
+            <div class="price"><span class="cur">$</span><span class="amt">0</span></div>
+            <p class="desc">For students to test the security of their app</p>
+            <p class="term">*Valid for 12 months</p>
+            <a class="btn" href="signup-student.html">Sign up</a>
+        </div>        
+
+        <div class="option reveal" style="--i:1">
+            <h2>Organisation</h2>
+            <div class="price"><span class="cur">$</span><span class="amt">34.99</span><span class="per">/year</span></div>
+            <p class="desc">For companies to monitor and test biometric authentication security</p>
+            <p class="term">*Only admins make the purchase</p>
+            <a class="btn" href="signup-organisation.html">Sign up</a>
+        </div>
+    </div>    
+
+    <p class="more reveal"><a href="plans.html">More details on plans</a></p>
+  </section>
+</main>
+
+<footer>
+  <div>
+    <a class="logo" href="index.html"><img src="assets/favicon.png" alt="BioAudit home"></a>
+    <ul>
+      <li><a href="about.html">About</a></li>
+      <li><a href="plans.html">Plans</a></li>
+      <li><a href="learn-more.html">More</a></li>
+      <li><a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a></li>
+    </ul>
+  </div>
+
+  <form class="mailing" id="mailing-form" novalidate>
+    <h2>Join Our Mailing List</h2>
+    <p>Stay updated with our latest news and updates delivered straight to your inbox.</p>
+    <label for="mail-email">Email address *</label>
+    <input type="email" id="mail-email" placeholder="Enter your email" required>
+    <label class="consent">
+      <input type="checkbox" id="mail-consent" required>
+      Yes, I agree to receive marketing emails. *
+    </label>
+    <button class="btn" type="submit">Join Now</button>
+    <p class="form-msg" id="mail-msg" role="status"></p>
+  </form>
+
+  <p class="contact">Questions? Email us at <a href="mailto:fyp26s314@gmail.com">fyp26s314@gmail.com</a></p>
+  <p class="copyright">© 2026 by BioAudit.</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
