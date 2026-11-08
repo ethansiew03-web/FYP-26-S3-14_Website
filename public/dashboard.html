@@ -84,6 +84,30 @@
     .btn-ghost:hover { border-color: var(--mint); filter: none; }
     .btn-small { padding: 7px 14px; font-size: 0.82rem; }
 
+    /* "More details" toggle: text with a small arrow that opens the note */
+    .more { margin-top: 18px; }
+    .more summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      list-style: none;
+      color: var(--mint);
+      font-size: 0.9rem;
+    }
+    .more summary::-webkit-details-marker { display: none; }
+    .more summary::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: translateY(-2px) rotate(45deg);   /* small downward arrow */
+      transition: transform 0.2s ease;
+    }
+    .more[open] summary::after { transform: translateY(2px) rotate(-135deg); }  /* points up when open */
+    .more p { margin-top: 12px; font-size: 0.82rem; line-height: 1.5; color: var(--dim); }
+
     /* ===== Layout ===== */
     .layout {
       display: grid;
@@ -129,7 +153,7 @@
 
     .stat .label { color: var(--dim); font-size: 0.88rem; }
     .stat .value { font-size: 1.35rem; margin-top: 10px; line-height: 1.2; overflow-wrap: break-word; }
-    .stat .note { color: var(--dim); font-size: 0.88rem; margin-top: 8px; line-height: 1.4; }
+    .stat .note { display: none; }
 
     /* Expiry banner */
     .banner {
@@ -316,7 +340,6 @@
       <!-- ===== Overview ===== -->
       <section class="panel-section" id="sec-overview" role="tabpanel" aria-labelledby="tab-overview">
         <h1 id="welcome">Welcome back</h1>
-        <p class="section-intro">Here's a quick look at your account and recent scans.</p>
 
         <div class="banner" id="expiry-banner" hidden>
           <span id="expiry-banner-text"></span>
@@ -353,7 +376,7 @@
         <div class="card download" style="margin-top: 20px">
           <div>
             <h2>Download BioAudit</h2>
-            <p>Run scans with the desktop app for Windows. Sign in to the app with the same email and password, and your results will show up under Reports.</p>
+            <p>Run scans with the desktop app for Windows.</p>
           </div>
           <a class="btn" href="https://github.com/NasDoctorFish/Final_Year_Project/releases/download/v1.0.6/BioAudit.exe" download>Download for Windows</a>
         </div>
@@ -379,7 +402,6 @@
       <!-- ===== Reports ===== -->
       <section class="panel-section" id="sec-reports" role="tabpanel" aria-labelledby="tab-reports" hidden>
         <h1>Reports</h1>
-        <p class="section-intro" id="reports-intro">Every scan you run in the BioAudit app is saved here. Select a scan to see its findings, or save it as a report.</p>
 
         <div class="table-wrap">
           <table>
@@ -403,7 +425,6 @@
       <!-- ===== Account ===== -->
       <section class="panel-section" id="sec-account" role="tabpanel" aria-labelledby="tab-account" hidden>
         <h1>Account</h1>
-        <p class="section-intro">Your account details. To change them, open the BioAudit app and go to your account settings.</p>
 
         <div class="card details" style="margin-top: 28px">
           <dl>
@@ -413,14 +434,15 @@
             <div id="ac-role-wrap" hidden><dt>Role</dt><dd id="ac-role">–</dd></div>
             <div><dt>Plan</dt><dd id="ac-plan">–</dd></div>
             <div><dt>Member since</dt><dd id="ac-since">–</dd></div>
+            
           </dl>
         </div>
+        <p class="section-intro" style="margin-top: 18px; font-size: 0.90rem">*To manage account details and account deletion, open the BioAudit app.</p>
       </section>
 
       <!-- ===== Subscription ===== -->
       <section class="panel-section" id="sec-subscription" role="tabpanel" aria-labelledby="tab-subscription" hidden>
         <h1>Subscription</h1>
-        <p class="section-intro">Your current plan and how long it lasts.</p>
 
         <div class="card" style="margin-top: 28px">
           <div class="plan-head">
@@ -443,7 +465,10 @@
             <button class="btn btn-ghost" type="button" id="sub-portal" hidden>Manage billing</button>
             <a class="btn btn-ghost" href="plans.html">Compare plans</a>
           </div>
-          <p class="muted" id="sub-note" style="margin-top: 18px; font-size: 0.82rem; line-height: 1.5" hidden></p>
+          <details class="more" id="sub-note" hidden>
+            <summary>More details</summary>
+            <p id="sub-note-text"></p>
+          </details>
         </div>
 
         <div class="card" style="margin-top: 20px">
@@ -824,13 +849,15 @@
 
       // The server gives only the end of the paid year, so the year is counted back from it
       let pct = s.state === "ended" ? 100 : 0;
+      let startText = "";
       if (live && end) {
         const start = new Date(end);
         start.setFullYear(start.getFullYear() - 1);
         pct = Math.min(100, Math.max(0, ((new Date() - start) / (end - start)) * 100));
+        startText = "Started " + fmtDate(start);
       }
       $("sub-bar").style.width = pct + "%";
-      $("sub-start").textContent = "";
+      $("sub-start").textContent = startText;
       $("sub-end").textContent = live && end ? (s.state === "cancelling" ? "Ends " : "Renews ") + when
         : s.state === "ended" && endPassed ? "Ended " + when : "";
 
@@ -844,7 +871,7 @@
           (admin ? " Pay for it to start using BioAudit and invite your team." : " It needs to be paid by your organisation's admin.")
       }[s.state];
 
-      // Buttons: only the admin gets them
+      // Buttons: only available for admins
       const action = $("sub-action");
       action.hidden = !admin;
       action.disabled = false;
@@ -865,7 +892,7 @@
 
       const note = $("sub-note");
       note.hidden = false;
-      note.textContent = "*One subscription covers the whole organisation: the admin and every member share the same paid year." +
+      $("sub-note-text").textContent = "*One subscription covers the whole organisation: the admin and every member share the same paid year. " +
         "It renews and is charged automatically each year until it is cancelled. Cancelling keeps everyone's access until the end of the " +
         "paid year; after that, all accounts in the organisation are suspended until the subscription is renewed. Only admins can cancel.";
 
@@ -873,7 +900,7 @@
       $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
     }
 
-    /* ----- Actions (they call the BioAudit server, like the app does) ----- */
+    /* ----- Actions (calling the BioAudit server, like the app does) ----- */
     function showNotice(text, kind) {
       const box = $("notice");
       box.hidden = false;
@@ -1027,9 +1054,6 @@
       const list = admin ? memberScans : scans;
       const rows = $("scan-rows");
       $("th-member").hidden = !admin;
-      $("reports-intro").textContent = admin
-        ? "Scans run by the members of your organisation. Select a scan to see its findings, or save it as a report."
-        : "Every scan you run in the BioAudit app is saved here. Select a scan to see its findings, or save it as a report.";
       const cols = admin ? 6 : 5;
       if (admin && memberReportsState === "loading") {
         rows.innerHTML = '<tr><td colspan="' + cols + '" class="empty">Loading your members\' reports…</td></tr>';
