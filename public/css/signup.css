@@ -2,9 +2,9 @@
 :root {
   --black: #000000;
   --mint: #EDFCEB;
-  --orange: #FF6C3F;
+  --green: #22C55E;
   --good: #7FD8A4;
-  --line: #505050;
+  --line: #070707;
   --dim: #A9B3A9;
 }
 
@@ -54,7 +54,7 @@ body {
   background: rgba(10, 12, 16, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--orange);
+  border: 1px solid var(--green);
   border-radius: 10px;
 }
 
@@ -83,7 +83,7 @@ input::placeholder { color: #7d877d; }
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
-select:focus { outline: none; border-color: var(--orange); }
+select:focus { outline: none; border-color: var(--green); }
 
 .hint { margin-top: 8px; color: var(--dim); font-size: 0.8rem; line-height: 1.5; }
 
@@ -97,14 +97,14 @@ select:focus { outline: none; border-color: var(--orange); }
   line-height: 1.4;
 }
 .checkbox-row a { color: var(--mint); }
-.checkbox-row input { margin-top: 3px; accent-color: var(--orange); }
+.checkbox-row input { margin-top: 3px; accent-color: var(--green); }
 
 .btn {
   display: block;
   width: 100%;
   margin-top: 28px;
   padding: 13px;
-  background: var(--orange);
+  background: var(--green);
   color: #000;
   border: 0;
   border-radius: 6px;
@@ -123,11 +123,11 @@ select:focus { outline: none; border-color: var(--orange); }
 .btn-secondary:hover { border-color: var(--mint); filter: none; }
 
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
-  outline: 2px solid var(--orange);
+  outline: 2px solid var(--green);
   outline-offset: 3px;
 }
 
-#message { margin-top: 14px; min-height: 1.2em; font-size: 0.85rem; color: var(--orange); line-height: 1.5; }
+#message { margin-top: 14px; min-height: 1.2em; font-size: 0.85rem; color: var(--green); line-height: 1.5; }
 #message.ok { color: var(--good); }
 
 .switch { margin-top: 20px; font-size: 0.85rem; color: var(--dim); text-align: center; }

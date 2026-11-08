@@ -8,7 +8,7 @@
   --black: #000000;
   --navy: #1E293B;
   --mint: #EDFCEB;
-  --orange: #FF6C3F;
+  --green: #22C55E;
   --line: #505050;
   --header-h: 140px;
 }
@@ -22,7 +22,7 @@ body {
 }
 
 a:focus-visible, button:focus-visible, input:focus-visible {
-  outline: 2px solid var(--orange);
+  outline: 2px solid var(--green);
   outline-offset: 3px;
 }
 
@@ -50,18 +50,7 @@ main, footer { position: relative; z-index: 1; }
   justify-content: space-between;
   gap: 24px;
   padding: 28px clamp(20px, 4vw, 64px);
-  border-bottom: 2px solid var(--orange);
-}
-
-/* soft fade from the header into the animation */
-.site-header::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0;
-  top: calc(100% + 2px);   /* starts just below the 2px orange line */
-  height: 40px;
-  background: linear-gradient(to bottom, var(--navy), transparent);
-  pointer-events: none;
+  border-bottom: 2px solid var(--green);
 }
 
 .logo img { display: block; width: 110px; height: 110px; }
@@ -102,7 +91,7 @@ position: relative;
 
 .btn {
   display: inline-block;
-  background: var(--orange);
+  background: var(--green);
   color: #000;
   font-family: inherit;
   font-size: 1rem;
@@ -172,11 +161,11 @@ footer ul a {
   font-size: 0.95rem;
 }
 
-.mailing .consent input { width: 16px; height: 16px; accent-color: var(--orange); }
+.mailing .consent input { width: 16px; height: 16px; accent-color: var(--green); }
 
 .mailing .btn { margin-top: 24px; width: 100%; max-width: 256px; padding: 10px; font-size: 0.95rem; }
 
-.mailing .form-msg { margin-top: 12px; min-height: 1.2em; font-size: 0.85rem; color: var(--orange); }
+.mailing .form-msg { margin-top: 12px; min-height: 1.2em; font-size: 0.85rem; color: var(--green); }
 
 .contact { grid-column: 1 / -1; margin-top: 28px; font-size: 1rem; color: #9aa49a; }
 
@@ -239,7 +228,7 @@ footer ul a {
   top: 4px;
   width: 2px;
   height: 185px;
-  background: var(--orange);
+  background: var(--green);
   opacity: 0.7;
 }
 
@@ -365,7 +354,7 @@ footer ul a {
   line-height: 1.5;
   max-width: 46ch;
   padding-left: 26px;
-  border-left: 2px solid var(--orange);
+  border-left: 2px solid var(--green);
 }
 
 .detection .side .btn { margin-top: 72px; }
@@ -398,7 +387,7 @@ footer ul a {
    PART 4 - learn-more.html (<html class="page-learn-more">)
    ===================================================== */
 .page-learn-more {
-  --card: rgba(30, 41, 59, 0.75);
+  --card: rgba(15, 23, 42, 0.85);
   --card-edge: #334155;
 }
 
@@ -548,7 +537,7 @@ border-bottom: 2px solid var(--white);
 .plan li svg {
   flex: none;
   width: 18px; height: 18px; margin-top: 2px;
-  stroke: var(--orange); fill: none; stroke-width: 2.2;
+  stroke: var(--green); fill: none; stroke-width: 2.2;
   stroke-linecap: round; stroke-linejoin: round;
 }
 

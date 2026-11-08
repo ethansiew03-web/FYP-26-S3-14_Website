@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="page-index">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,17 +9,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/index.css">
 </head>
 <body>
 
 <canvas id="bg" aria-hidden="true"></canvas>
 
 <header class="site-header">
-  <!-- Put your logo image in the public folder as logo.png -->
   <a class="logo" href="index.html"><img src="assets/logo.png" alt="BioAudit home"></a>
   <nav>
     <ul>
-      <!-- Change "#" to about.html / pricing.html once those pages exist -->
       <li><a href="about.html">About</a></li>
       <li><a href="plans.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
@@ -32,19 +31,45 @@
   <!-- ===== Hero ===== -->
   <section class="hero">
     <div class="hero-inner">
-    <h1>An automated biometric security <br> analysis for mobile apps </h1>
-    <div class="hero-body">
-    <img class="app-preview" src="assets/app-home.png" alt="The BioAudit app home screen, with options to scan an APK, assess a device or view history">
-    <p>Find the security gaps hiding behind your app with BioAudit.</p>
-    <a class="btn" href="plans.html">Get BioAudit</a>
+      <h1>An automated biometric security <br> analysis for mobile apps </h1>
+    
+      <div class="shot hero-shot">
+        <img class="shot-img" src="assets/app-home.png" alt="The BioAudit app home screen, with options to scan an APK, assess a device or view history">
       </div>
-    </div>  
+      <p class="hero-sub">Find the security gaps hiding behind your app with BioAudit.</p>
+      <a class="btn" href="plans.html">Get BioAudit</a>
+    </div>
   </section>
 
+  <!-- ===== How it works: Detect. Assess. Advise. ===== -->
+  <section class="steps" id="how-it-works">
+    <div class="steps-intro">
+      <p class="eyebrow reveal">How it works</p>
+      <h2 class="reveal">Detect.<br>Assess.<br>Advise.</h2>
+    </div>
 
+    <ol class="step-list reveal">
+      <li class="step">
+        <span class="step-num">01</span>
+        <h3>Detect</h3>
+        <p>Scan an APK or assess an installed app.</p>
+      </li>
+      <li class="step">
+        <span class="step-num">02</span>
+        <h3>Assess</h3>
+        <p>App's deterministic rules confirm the findings.</p>
+      </li>
+      <li class="step">
+        <span class="step-num">03</span>
+        <h3>Advise</h3>
+        <p>AI explains each finding in plain language.</p>
+      </li>
+    </ol>
+  </section>
 
-  <!-- ===== Features ===== -->
+  <!-- ===== Features: "Rules Decide. AI Explains." ===== -->
   <section class="features" id="features">
+    <p class="eyebrow reveal">What it finds</p>
     <h2 class="reveal">Rules Decide.<br>AI Explains.</h2>
 
     <div class="cards">
@@ -57,7 +82,7 @@
         <p>Tests any Android app the way a real attacker would from the outside. No source code or root access required.</p>
       </article>
 
-      <article class="card reveal">
+      <article class="card reveal" style="--i:1">
         <svg viewBox="0 0 56 56" aria-hidden="true">
           <rect x="4" y="4" width="48" height="48" rx="8"/>
           <rect x="19" y="19" width="18" height="18" rx="2"/>
@@ -67,7 +92,7 @@
         <p>Checks whether biometric-protected screens can be reached without ever unlocking, exposing gates that only look secure.</p>
       </article>
 
-      <article class="card reveal">
+      <article class="card reveal" style="--i:2">
         <svg viewBox="0 0 56 56" aria-hidden="true">
           <rect x="4" y="4" width="48" height="48" rx="8"/>
           <circle cx="28" cy="28" r="3"/>
@@ -79,7 +104,7 @@
         <p>Detects response differences and leaked secrets in logs that can let an attacker guess valid users or extract tokens.</p>
       </article>
 
-      <article class="card reveal">
+      <article class="card reveal" style="--i:3">
         <svg viewBox="0 0 56 56" aria-hidden="true">
           <path d="M14 4h20l10 10v38H14z"/>
           <path d="M34 4v10h10"/>
@@ -89,31 +114,47 @@
         <p>Every finding is confirmed by deterministic rules and then explained in plain language with a concrete fix. Can be exported as a shareable report.</p>
       </article>
     </div>
-
   </section>
+
   <!-- ===== Detection ===== -->
   <section class="detection">
     <div class="detection-text">
+      <p class="eyebrow reveal">Detection</p>
       <h2 class="reveal">Thorough Detection.<br>Practical Recommendations.</h2>
       <div class="side reveal">
         <p>Biometric login can look secure without being secure. See exactly where yours fails, no root or source code required.</p>
         <a class="btn" href="learn-more.html">Learn More</a>
       </div>
     </div>
-    <img class="scan-preview reveal" src="assets/app-scan.png" alt="The BioAudit Scan an APK screen: choose an APK file, confirm you're authorised to test it, then run a static scan">
-  </section> 
-   
+    <div class="shot reveal" data-parallax="0.08">
+      <img class="shot-img" src="assets/app-scan.png" alt="The BioAudit Scan an APK screen: choose an APK file, confirm you're authorised to test it, then run a static scan">
+    </div>
+  </section>
+
   <!-- ===== For organisations ===== -->
   <section class="detection detection-flip">
-    <img class="scan-preview reveal" src="assets/app-admin.png" alt="The BioAudit admin home screen, with a Team area for managing members, invitations, flagged runs and activity">
+    <div class="shot reveal" data-parallax="0.08">
+      <img class="shot-img" src="assets/app-admin.png" alt="The BioAudit admin home screen, with a Team area for managing members, invitations, flagged runs and activity">
+    </div>
     <div class="detection-text">
+      <p class="eyebrow reveal">For organisations</p>
       <h2 class="reveal">Built for teams.<br>Oversight for admins.</h2>
       <div class="side reveal">
         <p>Organisation admins get their own view of the app. Invite members, see every run your team makes, and review flagged results in one place.</p>
         <a class="btn" href="plans.html">See the Organisation plan</a>
       </div>
     </div>
-  </section>  
+  </section>
+
+  <!-- ===== Closing call to action ===== -->
+  <section class="cta">
+    <h2 class="reveal">Ready to audit<br>your app?</h2>
+    <p class="reveal" style="--i:1">Choose a plan and start testing your app's biometric security.</p>
+    <div class="cta-actions reveal" style="--i:2">
+      <a class="btn" href="plans.html">Get BioAudit</a>
+      <a class="btn btn-ghost" href="learn-more.html">Learn more</a>
+    </div>
+  </section>
 </main>
 
 <!-- ===== Footer ===== -->
@@ -122,7 +163,7 @@
     <a class="logo" href="index.html"><img src="assets/favicon.png" alt="BioAudit home"></a>
     <ul>
       <li><a href="about.html">About</a></li>
-      <li><a href="about.html">Plans</a></li>
+      <li><a href="plans.html">Plans</a></li>
       <li><a href="learn-more.html">More</a></li>
       <li><a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a></li>
       
@@ -146,6 +187,7 @@
   <p class="copyright">© 2026 by BioAudit.</p>
 </footer>
 
+<script src="js/index-effects.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
