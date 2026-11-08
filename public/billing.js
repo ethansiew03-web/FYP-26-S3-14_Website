@@ -79,3 +79,19 @@ export async function billingPortalUrl(user, orgId) {
 export async function renewalUrl(user, orgId) {
   return (await call(user, "POST", "/organisations/" + encodeURIComponent(orgId) + "/subscription/renew", {})).url;
 }
+
+/* Admin only. Everyone in the organisation: { id, displayName, email, role, scanCount, ... } */
+export async function listMembers(user, orgId) {
+  return (await call(user, "GET", "/organisations/" + encodeURIComponent(orgId) + "/members")).members || [];
+}
+
+/* Admin only. One member's scans, as summaries without the findings. The server records each read. */
+export async function listMemberScans(user, orgId, memberId, limit = 50) {
+  const path = "/organisations/" + encodeURIComponent(orgId) + "/members/" + encodeURIComponent(memberId) + "/scans?limit=" + limit;
+  return (await call(user, "GET", path)).scans || [];
+}
+
+/* One full scan with its findings. An admin may open a member's scan; the server records that read. */
+export async function getScan(user, scanId) {
+  return (await call(user, "GET", "/scans/" + encodeURIComponent(scanId))).scan;
+}

@@ -379,13 +379,14 @@
       <!-- ===== Reports ===== -->
       <section class="panel-section" id="sec-reports" role="tabpanel" aria-labelledby="tab-reports" hidden>
         <h1>Reports</h1>
-        <p class="section-intro">Every scan you run in the BioAudit app is saved here. Select a scan to see its findings, or save it as a report.</p>
+        <p class="section-intro" id="reports-intro">Every scan you run in the BioAudit app is saved here. Select a scan to see its findings, or save it as a report.</p>
 
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Date</th>
+                <th id="th-member" hidden>Member</th>
                 <th>App</th>
                 <th>Type</th>
                 <th>Findings</th>
@@ -497,7 +498,10 @@
       cancelSubscription,
       resumeSubscription,
       billingPortalUrl,
-      renewalUrl
+      renewalUrl,
+      listMembers,
+      listMemberScans,
+      getScan
     } from "./billing.js";
 
     const app = initializeApp(window.firebaseConfig);
@@ -526,7 +530,12 @@
     /* ===== Small helpers ===== */
     const $ = (id) => document.getElementById(id);
     const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-    const toDate = (v) => (v && typeof v.toDate === "function") ? v.toDate() : (v ? new Date(v) : null);
+    const toDate = (v) => {
+      if (!v) return null;
+      if (typeof v.toDate === "function") return v.toDate();      // from Firestore in the browser
+      const secs = v._seconds ?? v.seconds;                        // from the BioAudit server
+      return secs != null ? new Date(secs * 1000) : new Date(v);
+    };
     const fmtDate = (d) => d ? d.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }) : "–";
     const fmtDateTime = (d) => d ? d.toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }) : "–";
     const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
@@ -534,6 +543,8 @@
     let currentUser = null;
     let profile = {};
     let scans = [];
+    let memberScans = [];             // admins only: the scans of every member, newest first
+    let memberReportsState = "idle";  // idle, loading, done or failed
 
     /* ===== Tabs ===== */
     const tabs = ["overview", "reports", "account", "subscription"];
@@ -544,6 +555,8 @@
         $("sec-" + t).hidden = !selected;
       });
       history.replaceState(null, "", "#" + name);
+      // Admins: load the members' reports the first time Reports is opened
+      if (name === "reports" && isOrgAdmin() && memberReportsState === "idle") loadMemberReports();
     }
     tabs.forEach((t) => $("tab-" + t).addEventListener("click", () => showTab(t)));
 
@@ -1010,13 +1023,28 @@
     }
 
     function renderScans() {
+      const admin = isOrgAdmin();
+      const list = admin ? memberScans : scans;
       const rows = $("scan-rows");
-      if (!scans.length) {
-        rows.innerHTML = '<tr><td colspan="5" class="empty">No scans yet. Run your first scan in the BioAudit app and it will appear here automatically.</td></tr>';
+      $("th-member").hidden = !admin;
+      $("reports-intro").textContent = admin
+        ? "Scans run by the members of your organisation. Select a scan to see its findings, or save it as a report."
+        : "Every scan you run in the BioAudit app is saved here. Select a scan to see its findings, or save it as a report.";
+      const cols = admin ? 6 : 5;
+      if (admin && memberReportsState === "loading") {
+        rows.innerHTML = '<tr><td colspan="' + cols + '" class="empty">Loading your members\' reports…</td></tr>';
+      } else if (admin && memberReportsState === "failed") {
+        rows.innerHTML = '<tr><td colspan="' + cols + '" class="empty">Couldn\'t load your members\' reports. Refresh the page to try again.</td></tr>';
+      } else if (!list.length) {
+        rows.innerHTML = '<tr><td colspan="' + cols + '" class="empty">' + (admin
+          ? "Your members haven't run any scans yet. Their scans will appear here once they do."
+          : "No scans yet. Run your first scan in the BioAudit app and it will appear here automatically.") + "</td></tr>";
       } else {
-        rows.innerHTML = scans.map((s, i) =>
+        rows.innerHTML = list.map((s, i) =>
           "<tr data-i=\"" + i + "\">" +
             "<td>" + esc(fmtDateTime(toDate(s.createdAt))) + "</td>" +
+            (admin ? "<td>" + esc(s.memberName || "–") +
+              (s.memberEmail && s.memberEmail !== s.memberName ? '<div class="muted" style="font-size: 0.8rem">' + esc(s.memberEmail) + "</div>" : "") + "</td>" : "") +
             "<td>" + esc(appName(s)) + "</td>" +
             "<td>" + esc(scanType(s)) + "</td>" +
             "<td>" + severityChips(s.counts) + "</td>" +
@@ -1062,16 +1090,29 @@
       }).join("");
     }
 
-    function openScan(i) {
-      const s = scans[i];
+    async function openScan(i) {
+      const list = isOrgAdmin() ? memberScans : scans;
+      let s = list[i];
       if (!s) return;
       document.querySelectorAll("#scan-rows tr").forEach((tr) => tr.classList.toggle("selected", tr.dataset.i === String(i)));
-      const scope = s.scope || {};
       const box = $("scan-detail");
       box.hidden = false;
+      // A member's scan arrives as a summary. Fetch the full scan, with its findings, before showing it.
+      if (!s.findings) {
+        box.innerHTML = '<p class="muted">Loading the report…</p>';
+        box.scrollIntoView({ behavior: "smooth", block: "start" });
+        try {
+          s = list[i] = { ...(await getScan(currentUser, s.id)), memberName: s.memberName, memberEmail: s.memberEmail };
+        } catch (err) {
+          console.error("Could not load the report:", err);
+          box.innerHTML = '<p class="muted">Couldn\'t load this report. Please try again.</p>';
+          return;
+        }
+      }
+      const scope = s.scope || {};
       box.innerHTML =
         '<div class="detail-head">' +
-          "<div><h2>" + esc(appName(s)) + '</h2><p class="muted" style="margin-top: 6px; font-size: 0.85rem">' + esc(scanType(s)) + " · " + esc(fmtDateTime(toDate(s.createdAt))) + "</p></div>" +
+          "<div><h2>" + esc(appName(s)) + '</h2><p class="muted" style="margin-top: 6px; font-size: 0.85rem">' + esc(scanType(s)) + " · " + esc(fmtDateTime(toDate(s.createdAt))) + (s.memberName ? " · Run by " + esc(s.memberName) : "") + "</p></div>" +
           '<button class="btn btn-small" type="button" id="print-report">Save as PDF</button>' +
         "</div>" +
         '<div class="meta">' +
@@ -1121,6 +1162,32 @@
       // contains a closing script tag inside the script (that breaks the whole page)
       w.focus();
       setTimeout(() => w.print(), 300);
+    }
+
+    /* Admins: the scans of every member, with their names. The server records each of these reads. */
+    async function loadMemberReports() {
+      if (!isOrgAdmin() || memberReportsState === "loading") return;
+      memberReportsState = "loading";
+      renderScans();
+      try {
+        const members = await listMembers(currentUser, org.id);
+        const lists = await Promise.all(members.filter((m) => m.id !== currentUser.uid).map(async (m) => {
+          const name = m.displayName || m.email || "Member";
+          try {
+            const found = await listMemberScans(currentUser, org.id, m.id);
+            return found.map((s) => ({ ...s, memberName: name, memberEmail: m.email || "" }));
+          } catch (err) {
+            console.error("Could not load the scans of one member:", err);
+            return [];
+          }
+        }));
+        memberScans = lists.flat().sort((a, b) => (toDate(b.createdAt) || 0) - (toDate(a.createdAt) || 0));
+        memberReportsState = "done";
+      } catch (err) {
+        console.error("Could not load the members' reports:", err);
+        memberReportsState = "failed";
+      }
+      renderScans();
     }
 
     async function loadScans() {
