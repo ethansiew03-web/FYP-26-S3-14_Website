@@ -2,7 +2,7 @@
  * Sends a signed-in user to Stripe Checkout for the Organisation plan.
  *
  * How it works (Run Payments with Stripe extension):
- *  1. We add a "checkout session" request under customers/{uid}/checkout_sessions.
+ *  1. Added a "checkout session" request under customers/{uid}/checkout_sessions.
  *  2. The extension (on the server) asks Stripe for a checkout page and writes
  *     its link back onto that same document.
  *  3. We wait for the link, then send the browser to Stripe.

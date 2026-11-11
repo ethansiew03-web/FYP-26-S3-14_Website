@@ -6,6 +6,7 @@
   --good: #7FD8A4;
   --line: #070707;
   --dim: #A9B3A9;
+  --red: #FF5A5A;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -127,7 +128,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   outline-offset: 3px;
 }
 
-#message { margin-top: 14px; min-height: 1.2em; font-size: 0.85rem; color: var(--green); line-height: 1.5; }
+#message { margin-top: 14px; min-height: 1.2em; font-size: 0.85rem; color: var(--red); line-height: 1.5; }
 #message.ok { color: var(--good); }
 
 .switch { margin-top: 20px; font-size: 0.85rem; color: var(--dim); text-align: center; }

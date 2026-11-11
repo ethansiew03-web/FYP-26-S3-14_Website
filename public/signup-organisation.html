@@ -54,7 +54,7 @@
     </div>
   </main>
 
-  <!-- Load config FIRST -->
+  <!-- Load config first -->
   <script src="firebase-config.js"></script>
 
   <script type="module">
@@ -81,6 +81,7 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       messageEl.textContent = "";
+      messageEl.className = "";
 
       const fullName = document.getElementById("fullName").value.trim();
       const email = document.getElementById("email").value.trim().toLowerCase();
@@ -115,10 +116,11 @@
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
-
-        // Go and pay. The account is upgraded by the server once Stripe confirms payment.
-        // If checkout can't open, the dashboard offers a "Complete payment" button instead.
-        messageEl.textContent = "Account created. Opening checkout…";
+        
+        // Payment. The account is upgraded by the server once Stripe confirms payment.
+        // If checkout was not complete, the dashboard offers a "Complete payment" button instead.
+        messageEl.className = "ok";
+        messageEl.textContent = "Account created. Opening checkout";
         try {
           await startCheckout(db, uid);
           return;
