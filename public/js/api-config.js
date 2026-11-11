@@ -7,8 +7,7 @@
  *   "https://your-backend.example.com/api"
  * For local testing it is the same address the app uses: "http://127.0.0.1:4000/api".
  *
- * The backend must also allow this website: add the site's address
- * (for example https://bioaudit.me) to the backend's CORS_ORIGINS setting.
+ * https://bioaudit.me was also to the backend's CORS_ORIGINS setting.
  */
 window.bioauditApi = {
   base: "https://bioaudit-api-391854054876.us-central1.run.app/api"

@@ -55,7 +55,7 @@
   </main>
 
   <!-- Load config first -->
-  <script src="firebase-config.js"></script>
+  <script src="js/firebase-config.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -69,8 +69,8 @@
       setDoc,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-    import { startCheckout } from "./checkout.js";
-    import { passwordProblem } from "./password-policy.js";
+    import { startCheckout } from "./js/checkout.js";
+    import { passwordProblem } from "./js/password-policy.js";
 
     const app = initializeApp(window.firebaseConfig);
     const auth = getAuth(app);
