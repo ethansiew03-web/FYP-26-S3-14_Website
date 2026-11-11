@@ -141,12 +141,19 @@
     }
     .switch a { color: var(--mint); }
 
-    #message {
+    #message,
+    #reset-message {
       margin-top: 14px;
       min-height: 1.2em;
       font-size: 0.85rem;
+      line-height: 1.5;
       color: var(--red);
     }
+    #message.ok,
+    #reset-message.ok { color: #7FD8A4; }
+
+    .forgot { margin-top: 12px; font-size: 0.85rem; text-align: right; }
+    .forgot a { color: var(--mint); }
 
     @media (prefers-reduced-motion: reduce) {
       .bg-video { display: none; }
@@ -177,6 +184,7 @@
 
         <label for="password">Password</label>
         <input type="password" id="password" placeholder="At least 12 characters" autocomplete="current-password" required />
+        <p class="forgot"><a href="#" id="forgot-link">Forgot password?</a></p>
 
         <button class="btn" type="submit" id="login-btn">Log In</button>
         <p id="message" role="status"></p>
@@ -184,16 +192,42 @@
         <p class="switch">Don't have an account? <a href="plans.html">Sign up</a></p>
       </form>
 
+      <form id="reset-section" novalidate hidden>
+        <h1>Reset your password</h1>
+        <p class="lead">Enter the email you log in with and press Send code. We will email you a six-digit code. Enter it here with a new password.</p>
+
+        <label for="reset-email">Email</label>
+        <input type="email" id="reset-email" placeholder="you@example.com" autocomplete="email" required />
+        <button class="btn btn-ghost" type="button" id="send-code-btn">Send code</button>
+
+        <div id="reset-fields" hidden>
+          <label for="reset-code">Six-digit code</label>
+          <input type="text" id="reset-code" inputmode="numeric" placeholder="123456" autocomplete="one-time-code" />
+
+          <label for="new-password">New password</label>
+          <input type="password" id="new-password" placeholder="12+ characters, mixed case, digit, symbol" autocomplete="new-password" />
+
+          <label for="confirm-password">Confirm new password</label>
+          <input type="password" id="confirm-password" placeholder="Re-enter new password" autocomplete="new-password" />
+
+          <button class="btn" type="submit" id="reset-btn">Reset password</button>
+        </div>
+
+        <p id="reset-message" role="status"></p>
+        <p class="switch"><a href="#" id="back-to-login">Back to log in</a></p>
+      </form>
 
     </div>
   </main>
 
   <!-- Load config FIRST -->
   <script src="js/firebase-config.js"></script>
+  <script src="js/api-config.js"></script>
 
   <!-- Then Firebase logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { passwordProblem } from "./js/password-policy.js";
     import {
       getAuth,
       signInWithEmailAndPassword,
