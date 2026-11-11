@@ -23,9 +23,9 @@
   <main class="wrap">
     <div class="card">
       <h1>Create an Organisation account</h1>
-      <p class="lead">This creates an admin account where members can be invited to join your team in the BioAudit app.</p>
+      <p class="lead">This creates an admin account where members can be invited to join your team in the BioAudit app. We will email a six-digit code to your email address to confirm it.</p>
 
-      <form id="signup-form">
+      <form id="signup-form" novalidate>
         <label class="field" for="fullName">Name *</label>
         <input type="text" id="fullName" autocomplete="name" required />
 
@@ -33,7 +33,7 @@
         <input type="email" id="email" autocomplete="email" required />
 
         <label class="field" for="password">Password *</label>
-        <input type="password" id="password" placeholder="Create a password" autocomplete="new-password" required />
+        <input type="password" id="password" placeholder="Create a new password" autocomplete="new-password" required />
         <p class="hint">At least 12 characters, with upper and lower case letters, a digit and a symbol.</p>
 
         <label class="field" for="confirmPassword">Confirm password *</label>
@@ -42,12 +42,19 @@
         <label class="field" for="organisationName">Organisation name *</label>
         <input type="text" id="organisationName" placeholder="Give your organisation a name" required />
 
+        <button class="btn btn-secondary" type="button" id="send-code-btn">Send code</button>
+
+        <div id="code-section" hidden>
+          <label class="field" for="code">Six-digit code *</label>
+          <input type="text" id="code" inputmode="numeric" placeholder="123456" autocomplete="one-time-code" />
+        </div>
+
         <div class="checkbox-row">
           <input type="checkbox" id="terms" required />
           <label for="terms">I agree to the subscription terms and conditions. * <a href="terms.html" target="_blank" rel="noopener">Read T&amp;C</a></label>
         </div>
 
-        <button class="btn" type="submit">Create account</button>
+        <button class="btn" type="submit" id="create-btn" disabled>Create account</button>
         <p id="message" role="status"></p>
 
         <p class="switch">Already have an account? <a href="login.html">Log in</a></p>
@@ -57,19 +64,15 @@
 
   <!-- Load config first -->
   <script src="js/firebase-config.js"></script>
+  <script src="js/api-config.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import {
       getAuth,
-      createUserWithEmailAndPassword
+      signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import {
-      getFirestore,
-      doc,
-      setDoc,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
     import { startCheckout } from "./js/checkout.js";
     import { passwordProblem } from "./js/password-policy.js";
 
@@ -77,69 +80,208 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const form = document.getElementById("signup-form");
-    const messageEl = document.getElementById("message");
+    const $ = (id) => document.getElementById(id);
+    const form = $("signup-form");
+    const messageEl = $("message");
+    const sendBtn = $("send-code-btn");
+    const createBtn = $("create-btn");
 
+    const BOUNCE_WATCH_MS = 2 * 60 * 1000;   // how long we listen for "this address does not exist"
+    const RESEND_SECONDS = 60;               // the server allows one code per address per minute
+
+    let sentTo = null;      // the address the current code was sent to
+    let sendId = null;      // lets us ask the server whether that email bounced
+    let watchToken = 0;     // changes on every send, so an old watcher stops itself
+    let cooldownTimer = null;
+
+    /* ===== Talking to the BioAudit backend (address set in js/api-config.js) ===== */
+    async function api(method, path, body) {
+      const base = (window.bioauditApi && window.bioauditApi.base || "").trim().replace(/\/+$/, "");
+      if (!base) throw new Error("The BioAudit server address isn't set up. Please contact the team.");
+      let response;
+      try {
+        response = await fetch(base + path, {
+          method,
+          headers: body !== undefined ? { "Content-Type": "application/json" } : {},
+          body: body !== undefined ? JSON.stringify(body) : undefined
+        });
+      } catch (err) {
+        console.error("BioAudit server unreachable:", err);
+        throw new Error("Couldn't reach the BioAudit server. Please try again shortly.");
+      }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const e = data.error || {};
+        const details = (e.details || []).map((d) => d.field + ": " + d.message).join(". ");
+        const error = new Error([e.message, details].filter(Boolean).join(" ") || "Something went wrong. Please try again.");
+        error.status = response.status;
+        throw error;
+      }
+      return data;
+    }
+
+    function show(text, ok = false) {
+      messageEl.textContent = text;
+      messageEl.className = ok ? "ok" : "";
+    }
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const cleanEmail = () => $("email").value.trim().toLowerCase();
+
+    /* ===== Changing the email invalidates a code already sent ===== */
+    function resetCode() {
+      watchToken++;
+      sentTo = null;
+      sendId = null;
+      $("code-section").hidden = true;
+      $("code").value = "";
+      createBtn.disabled = true;
+    }
+
+    $("email").addEventListener("input", () => {
+      if (sentTo && cleanEmail() !== sentTo) {
+        clearInterval(cooldownTimer);
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send code";
+        resetCode();
+      }
+    });
+
+    // Keep only the digits, at most six, so a pasted "1 2 3 4 5 6" still works
+    $("code").addEventListener("input", (e) => {
+      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+    });
+
+    /* ===== Send code ===== */
+    function startCooldown() {
+      clearInterval(cooldownTimer);
+      let left = RESEND_SECONDS;
+      sendBtn.disabled = true;
+      const tick = () => {
+        if (left <= 0) {
+          clearInterval(cooldownTimer);
+          sendBtn.disabled = false;
+          sendBtn.textContent = "Resend code";
+          return;
+        }
+        sendBtn.textContent = "Resend code (" + left + "s)";
+        left--;
+      };
+      tick();
+      cooldownTimer = setInterval(tick, 1000);
+    }
+
+    // The server only finds out an address doesn't exist once the mail server answers, a few
+    // seconds after the code is sent. So we ask every few seconds for a couple of minutes.
+    async function watchForBounce(email, id, token) {
+      const stopAt = Date.now() + BOUNCE_WATCH_MS;
+      while (Date.now() < stopAt && token === watchToken) {
+        await sleep(4000);
+        if (token !== watchToken) return;
+        try {
+          const result = await api("POST", "/auth/register/code-status", { email, sendId: id });
+          if (result.status === "bounced") {
+            resetCode();
+            clearInterval(cooldownTimer);
+            sendBtn.disabled = false;
+            sendBtn.textContent = "Send code";
+            show(result.message || (email + " could not receive the code. Check the address and try again."));
+            return;
+          }
+        } catch (err) {
+          console.warn("Could not check the code status:", err);
+        }
+      }
+    }
+
+    sendBtn.addEventListener("click", async () => {
+      show("");
+      const email = cleanEmail();
+      if (!email) return show("Enter your email address.");
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending…";
+      try {
+        // accountType "team" is what makes the server accept any work address, not just a university's
+        const result = await api("POST", "/auth/register/send-code", { email, accountType: "team" });
+        sentTo = email;
+        sendId = result.sendId;
+        const token = ++watchToken;
+        $("code-section").hidden = false;
+        createBtn.disabled = false;
+        show(result.message || ("A code has been sent to " + email + "."), true);
+        startCooldown();
+        if (sendId) watchForBounce(email, sendId, token);
+      } catch (err) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = sentTo ? "Resend code" : "Send code";
+        show(err.message);
+      }
+    });
+
+    /* ===== Create the account ===== */
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      messageEl.textContent = "";
-      messageEl.className = "";
+      show("");
 
-      const fullName = document.getElementById("fullName").value.trim();
-      const email = document.getElementById("email").value.trim().toLowerCase();
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-      const organisationName = document.getElementById("organisationName").value.trim();
+      const fullName = $("fullName").value.trim();
+      const email = cleanEmail();
+      const password = $("password").value;
+      const organisationName = $("organisationName").value.trim();
+      const code = $("code").value.replace(/\D/g, "").slice(0, 6);
 
+      if (!fullName) return show("Enter your name.");
+      if (!sentTo || sentTo !== email) return show("Send a code to this email address first.");
       const problem = passwordProblem(password);
-      if (problem) {
-        messageEl.textContent = problem;
-        return;
-      }
+      if (problem) return show(problem);
+      if (password !== $("confirmPassword").value) return show("Passwords do not match.");
+      if (organisationName.length < 2) return show("Give your organisation a name.");
+      if (!/^\d{6}$/.test(code)) return show("Enter the six-digit code from the email.");
+      if (!$("terms").checked) return show("Please accept the terms and conditions.");
 
-      if (password !== confirmPassword) {
-        messageEl.textContent = "Passwords do not match.";
-        return;
-      }
+      createBtn.disabled = true;
+      createBtn.textContent = "Creating account…";
 
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-
-        await setDoc(doc(db, "users", uid), {
-          displayName: fullName,
+        // The backend checks the code, creates the account and the organisation, and makes
+        // this person its admin. The organisation starts unpaid.
+        await api("POST", "/auth/register-admin", {
           email,
-          organisationId: null,
+          password,
+          displayName: fullName,
           organisationName,
-          role: "member",
-          scanCount: 0,
-          subscription: {
-            status: "none",
-            startedAt: null,
-            cancelledAt: null
-          },
-          tier: "free",
-          requestedPlan: "organisation",
-          disabled: false,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          tosAccepted: true,
+          code
         });
-        
-        // Payment. The account is upgraded by the server once Stripe confirms payment.
-        // If checkout was not complete, the dashboard offers a "Complete payment" button instead.
-        messageEl.className = "ok";
-        messageEl.textContent = "Account created. Opening checkout";
-        try {
-          await startCheckout(db, uid);
-          return;
-        } catch (checkoutErr) {
-          console.error(checkoutErr);
-        }
-        window.location.href = "dashboard.html";
-
       } catch (err) {
-        messageEl.textContent = err.message;
+        createBtn.disabled = false;
+        createBtn.textContent = "Create account";
+        // Say nothing that tells a stranger whether this address already has an account
+        show(err.status === 409
+          ? "We couldn't create this account. If you already have one, log in or reset your password."
+          : err.message);
+        return;
       }
+
+      // The account exists now. Sign in here so the dashboard and checkout know who this is.
+      let uid;
+      try {
+        uid = (await signInWithEmailAndPassword(auth, email, password)).user.uid;
+      } catch (err) {
+        console.error(err);
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Payment. The account is upgraded by the server once Stripe confirms payment.
+      // If checkout can't open, the dashboard offers a "Pay for subscription" button instead.
+      show("Account created. Opening checkout…", true);
+      try {
+        await startCheckout(db, uid);
+        return;
+      } catch (checkoutErr) {
+        console.error(checkoutErr);
+      }
+      window.location.href = "dashboard.html";
     });
   </script>
 
