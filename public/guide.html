@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Guide | BioAudit</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<header class="site-header">
+  <a class="logo" href="index.html"><img src="assets/logo.png" alt="BioAudit home"></a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="plans.html">Plans</a></li>
+      <li><a href="learn-more.html">More</a></li>
+      <li><a href="guide.html" aria-current="page">User Guide</a></li>
+    </ul>
+    <a class="btn" href="signup.html">Sign Up</a>
+    <a class="btn" href="login.html">Login</a>
+  </nav>
+</head<main>
+  <section class="guide">
+    <h1 class="reveal">User Guide</h1>
+    <p class="guide-intro reveal">How to sign up, get BioAudit, sign in, and add your team.</p>
+
+    <nav class="guide-toc reveal" aria-label="Guide sections">
+      <a href="#signup">1. Sign up</a>
+      <a href="#download">2. Download BioAudit</a>
+      <a href="#signin">3. Sign in on BioAudit</a>
+      <a href="#members">4. Add members to your organisation</a>
+    </nav>
+
+    <article class="guide-step reveal" id="signup">
+      <h2>1. Sign up</h2>
+      <h3>Student account (free)</h3>
+      <ol>
+        <li>Click <strong>Sign Up</strong> at the top of the page and choose <strong>Student</strong>.</li>
+        <li>Enter your name, choose your university, and enter your university email address.</li>
+        <li>Choose a password of at least 12 characters with an uppercase letter, a lowercase letter, a digit and a symbol, then type it again to confirm.</li>
+        <li>Press <strong>Send code</strong>. We email a six-digit code to your university address. If the email does not arrive, check your spam folder, then press <strong>Resend code</strong>.</li>
+        <li>Type the code into the box (pasting it works), tick the Terms and Conditions box, and press <strong>Create account</strong>.</li>
+      </ol>
+      <p class="guide-note">Student access lasts 12 months. Your university email needs to be verified again every year.</p>
+
+      <h3>Organisation account (paid)</h3>
+      <ol>
+        <li>Click <strong>Sign Up</strong> and choose <strong>Organisation</strong>. Only the person who will manage the team and pay for it (the admin) should do this.</li>
+        <li>Enter your name, email, a password (same rules as above) and your organisation's name, then tick the Terms and Conditions box.</li>
+        <li>Press <strong>Create account</strong>. You are taken to Stripe to pay for the yearly plan.</li>
+        <li>After payment you return to your dashboard. The plan switches on within a short moment of Stripe confirming the payment. If checkout did not open, use <strong>Complete payment</strong> on the dashboard.</li>
+      </ol>
+    </article>
+
+    <article class="guide-step reveal" id="download">
+      <h2>2. Download BioAudit</h2>
+      <ol>
+        <li>Log in on this website.</li>
+        <li>On the <strong>Overview</strong> tab of your dashboard, press <strong>Download for Windows</strong>. This always fetches the latest version.</li>
+        <li>When the download finishes, double-click <strong>BioAudit.exe</strong>. There is nothing to install.</li>
+      </ol>
+      <p class="guide-note">If Windows shows a warning, choose <strong>More info</strong>, then <strong>Run anyway</strong>. BioAudit is a student project and is not yet code-signed.</p>
+    </article>
+
+    <article class="guide-step reveal" id="signin">
+      <h2>3. Sign in on BioAudit</h2>
+      <ol>
+        <li>Open BioAudit. A welcome screen appears with three tabs: <strong>Create account</strong>, <strong>Join with an invite</strong> and <strong>Sign in</strong>.</li>
+        <li>Choose <strong>Sign in</strong> and enter the same email and password you used on this website.</li>
+        <li>Optional: tick <strong>Keep me signed in on this computer</strong> to skip this next time. Leave it off on a shared or public computer.</li>
+        <li>Forgotten your password? Press <strong>Forgot password?</strong>, then <strong>Send code</strong>, and enter the six-digit code we email you together with a new password.</li>
+      </ol>
+      <p class="guide-note">BioAudit saves every scan to your account, so you need to be signed in before it will scan anything.</p>
+    </article>
+
+    <article class="guide-step reveal" id="members">
+      <h2>4. Add members to your organisation</h2>
+      <p>Only the organisation's admin can invite people, and the organisation's subscription must be paid first.</p>
+      <h3>As the admin</h3>
+      <ol>
+        <li>Sign in to BioAudit and open the <strong>Team</strong> tab.</li>
+        <li>Go to <strong>Invitations</strong> and enter the new member's email address.</li>
+        <li>BioAudit creates a one-time invitation token. Send it to that person.</li>
+      </ol>
+      <h3>As the new member</h3>
+      <ol>
+        <li>Open BioAudit and choose the <strong>Join with an invite</strong> tab.</li>
+        <li>Enter the email the invitation was sent to, choose a password, and paste the invitation token.</li>
+        <li>Press the join button. You are now part of the organisation and covered by its subscription.</li>
+      </ol>
+      <p class="guide-note">Admins can also promote, suspend or remove members from the <strong>Members</strong> sub-tab, and cancel or renew the subscription from <strong>Subscription</strong>.</p>
+    </article>
+  </section>
+</main>main>
+
+<footer>
+  <div>
+    <a class="logo" href="index.html"><img src="assets/favicon.png" alt="BioAudit home"></a>
+    <ul>
+      <li><a href="about.html">About</a></li>
+      <li><a href="plans.html">Plans</a></li>
+      <li><a href="learn-more.html">More</a></li>
+      <li><a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a></li>
+    </ul>
+  </div>
+
+  <form class="mailing" id="mailing-form" novalidate>
+    <h2>Join Our Mailing List</h2>
+    <p>Stay updated with our latest news and updates delivered straight to your inbox.</p>
+    <label for="mail-email">Email address *</label>
+    <input type="email" id="mail-email" placeholder="Enter your email" required>
+    <label class="consent">
+      <input type="checkbox" id="mail-consent" required>
+      Yes, I agree to receive marketing emails. *
+    </label>
+    <button class="btn" type="submit">Join Now</button>
+  </form>
+  <p class="contact">Questions? Email us at <a href="mailto:fyp26s314@gmail.com">fyp26s314@gmail.com</a></p>
+  <p class="copyright">© 2026 by BioAudit.</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
