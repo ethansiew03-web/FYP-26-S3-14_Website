@@ -215,9 +215,26 @@
       try {
         await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
       } catch (err) {
-        messageEl.textContent = err.message;
+        messageEl.textContent = loginMessage(err);
       }
     });
+
+    function loginMessage(err) {
+      switch (err && err.code) {
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+        case "auth/invalid-email":
+        case "auth/missing-password":
+          return "Invalid Email or Password";
+        case "auth/too-many-requests":
+          return "Too many attempts. Please try again in a few minutes.";
+        case "auth/network-request-failed":
+          return "Unable to reach server. Check your connection and try again.";
+        default:
+          return "Something went wrong. Please try again.";
+  }
+}    
 
     // Signed in (just now, or from an earlier visit): go to the dashboard
     onAuthStateChanged(auth, (user) => {
