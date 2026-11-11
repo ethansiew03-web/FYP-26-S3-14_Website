@@ -698,6 +698,13 @@
         $("sub-action").hidden = true;
       }
       $("sub-message").textContent = msg;
+      const studentNote = $("sub-note");
+      studentNote.hidden = key !== "student";
+      if (key === "student") {
+        $("sub-note-text").textContent = "*Student email will need to be verified every year. Failure to verify will lead to suspension of the account until verification is done. " +
+          "This account will only be active if you are a current student and have provided email verification. If you are no longer a student, this account will be suspended. " +
+          "If you wish to continue using BioAudit after your student email has expired, purchase the Organsiation plan.";
+      }      
 
       const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
       $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
