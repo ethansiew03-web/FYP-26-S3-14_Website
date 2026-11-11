@@ -39,7 +39,7 @@
         <input type="email" id="email" autocomplete="email" required />
 
         <label class="field" for="password">Password *</label>
-        <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" required />
+        <input type="password" id="password" placeholder="At least 12 characters including mixed case, digit, symbol" autocomplete="new-password" required />
 
         <label class="field" for="confirmPassword">Confirm password *</label>
         <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required />
@@ -70,6 +70,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { passwordProblem } from "./password-policy.js";
     import {
       getAuth,
       signInWithEmailAndPassword
@@ -258,7 +259,8 @@
 
       if (!fullName) return show("Enter your name.");
       if (!sentTo || sentTo !== email) return show("Send a code to this email address first.");
-      if (password.length < 8) return show("Use a password of at least 8 characters.");
+      const pwProblem = passwordProblem(password);
+      if (pwProblem) return show(pwProblem);
       if (password !== $("confirmPassword").value) return show("Passwords do not match.");
       if (!/^\d{6}$/.test(code)) return show("Enter the six-digit code from the email.");
       if (!$("terms").checked) return show("Please accept the terms and conditions.");

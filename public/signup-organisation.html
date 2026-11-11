@@ -33,7 +33,7 @@
         <input type="email" id="email" autocomplete="email" required />
 
         <label class="field" for="password">Password *</label>
-        <input type="password" id="password" placeholder="At least 6 characters" autocomplete="new-password" required />
+        <input type="password" id="password" placeholder="At least 8 characters including mixed case, digit, symbol" autocomplete="new-password" required />
 
         <label class="field" for="confirmPassword">Confirm password *</label>
         <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required />
@@ -70,6 +70,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
     import { startCheckout } from "./checkout.js";
+    import { passwordProblem } from "./password-policy.js";
 
     const app = initializeApp(window.firebaseConfig);
     const auth = getAuth(app);
@@ -88,6 +89,12 @@
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
       const organisationName = document.getElementById("organisationName").value.trim();
+
+      const problem = passwordProblem(password);
+      if (problem) {
+        messageEl.textContent = problem;
+        return;
+      }
 
       if (password !== confirmPassword) {
         messageEl.textContent = "Passwords do not match.";
