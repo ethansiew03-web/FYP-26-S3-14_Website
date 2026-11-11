@@ -29,72 +29,73 @@
 <main>
   <section class="guide">
     <h1 class="reveal">User Guide</h1>
-    <p class="guide-intro reveal">How to sign up, get BioAudit, sign in, and add your team.</p>
+    <p class="guide-intro reveal">How to use and set up BioAudit</p>
 
     <div class="guide-layout">
-      <div class="guide-tabs" role="tablist" aria-label="Guide sections">
-        <button class="guide-tab" role="tab" id="tab-signup" aria-controls="sec-signup" aria-selected="true">1. Sign up</button>
-        <button class="guide-tab" role="tab" id="tab-download" aria-controls="sec-download" aria-selected="false">2. Download BioAudit</button>
-        <button class="guide-tab" role="tab" id="tab-signin" aria-controls="sec-signin" aria-selected="false">3. Sign in on BioAudit</button>
-        <button class="guide-tab" role="tab" id="tab-members" aria-controls="sec-members" aria-selected="false">4. Add members</button>
-      </div>
+      <nav class="guide-tabs" aria-label="Guide sections">
+        <a class="guide-tab" href="#sec-signup" aria-current="true">1. Sign up</a>
+        <a class="guide-tab" href="#sec-download">2. Download BioAudit</a>
+        <a class="guide-tab" href="#sec-signin">3. Sign in on BioAudit</a>
+        <a class="guide-tab" href="#sec-members">4. Add members</a>
+      </nav>
 
       <div class="guide-body">
-        <article class="guide-step" id="sec-signup" role="tabpanel" aria-labelledby="tab-signup">
+        <article class="guide-step" id="sec-signup">
           <h2>1. Sign up</h2>
           <h3>Student account (Free)</h3>
           <ol>
             <li>Click <strong>Sign Up</strong> at the top of the page and choose <strong>Student</strong>.</li>
             <li>Enter your name, choose your university, and enter your university email address.</li>
             <li>Choose a password of at least 12 characters with an uppercase letter, a lowercase letter, a digit and a symbol, then type it again to confirm.</li>
-            <li>Press <strong>Send code</strong>. We email a six-digit code to your university address. If the email does not arrive, check your spam folder, then press <strong>Resend code</strong>.</li>
-            <li>Type the code into the box (pasting it works), tick the Terms and Conditions box, and press <strong>Create account</strong>.</li>
+            <li>Click <strong>Send code</strong>. A six-digit code will be emailed to your university address. If the email does not arrive, check your spam folder, or click <strong>Resend code</strong>.</li>
+            <li>Type or paste the code into the box, check the Terms and Conditions box, and click <strong>Create account</strong>.</li>
           </ol>
-          <p class="guide-note">Student access lasts 12 months. Your university email needs to be verified again every year.</p>
+          <p class="guide-note">Student access lasts 12 months. Your university email needs to be verified every year.</p>
           <h3>Organisation account (Paid)</h3>
           <ol>
-            <li>Click <strong>Sign Up</strong> and choose <strong>Organisation</strong>. Only the person who will manage the team and pay for it (the admin) should do this.</li>
-            <li>Enter your name, email, a password (same rules as above) and your organisation's name, then tick the Terms and Conditions box.</li>
-            <li>Press <strong>Create account</strong>. You are taken to Stripe to pay for the yearly plan.</li>
-            <li>After payment you return to your dashboard. The plan switches on within a short moment of Stripe confirming the payment. If checkout did not open, use <strong>Complete payment</strong> on the dashboard.</li>
+            <li>Click <strong>Sign Up</strong> and choose <strong>Organisation.</strong></li>
+            <li>Enter your name, email, a password and your organisation's name. Only the details of the person managing the team (the admin) should be entered here.</li> 
+            <li>Check the Terms and Conditions box.</li>
+            <li>Click <strong>Create account</strong>. You will be taken to Stripe to complete your purchase.</li>
+            <li>After payment, you will be returned to your dashboard. The plan switches on within a short moment of Stripe confirming the payment. If checkout did not open, use <strong>Complete payment</strong> on the dashboard.</li>
           </ol>        
         </article>
 
-        <article class="guide-step" id="sec-download" role="tabpanel" aria-labelledby="tab-download" hidden>
+        <article class="guide-step" id="sec-download">
           <h2>2. Download BioAudit</h2>
           <ol>
             <li>Log in on this website.</li>
-            <li>On the <strong>Overview</strong> tab of your dashboard, press <strong>Download for Windows</strong>. This always fetches the latest version.</li>
-            <li>When the download finishes, double-click <strong>BioAudit.exe</strong>. There is nothing to install.</li>
+            <li>On the <strong>Overview</strong> tab of your dashboard, click <strong>Download for Windows</strong>.</li>
+            <li>When download is complete, double click <strong>BioAudit.exe</strong> to open the app.</li>
           </ol>
           <p class="guide-note">If Windows shows a warning, choose <strong>More info</strong>, then <strong>Run anyway</strong>. BioAudit is a student project and is not yet code signed.</p>
         </article>
 
-        <article class="guide-step" id="sec-signin" role="tabpanel" aria-labelledby="tab-signin" hidden>
+        <article class="guide-step" id="sec-signin">
           <h2>3. Sign in on BioAudit</h2>
           <ol>
             <li>Open BioAudit. A welcome screen appears with three tabs: <strong>Create account</strong>, <strong>Join with an invite</strong> and <strong>Sign in</strong>.</li>
             <li>Choose <strong>Sign in</strong> and enter the same email and password you used on this website.</li>
-            <li>Optional: tick <strong>Keep me signed in on this computer</strong> to skip this next time. Leave it off on a shared or public computer.</li>
-            <li>Forgotten your password? Press <strong>Forgot password?</strong>, then <strong>Send code</strong>, and enter the six-digit code we email you together with a new password.</li>
+            <li>Optional: check <strong>Keep me signed in on this computer</strong> to skip this next time. Leave it off on a shared or public computer.</li>
+            <li>If you lose your password, click <strong>Forgot password?</strong>, then <strong>Send code</strong>. Enter the six-digit code sent to your email and enter your new password.</li>
           </ol>
-          <p class="guide-note">BioAudit saves every scan to your account, so you need to be signed in before it will scan anything.</p>
+          <p class="guide-note">BioAudit saves every scan to your account, you can access all your scans on the dashboard as well.</p>
         </article>
 
-        <article class="guide-step" id="sec-members" role="tabpanel" aria-labelledby="tab-members" hidden>
+        <article class="guide-step" id="sec-members">
           <h2>4. Add members to your organisation</h2>
             <p>Only the organisation's admin can invite people, and the organisation's subscription must be paid first.</p>
           <h3>As the admin</h3>
           <ol>
             <li>Sign in to BioAudit and open the <strong>Team</strong> tab.</li>
             <li>Go to <strong>Invitations</strong> and enter the new member's email address.</li>
-            <li>BioAudit creates a one-time invitation token. Send it to that person.</li>
+            <li>A one-time invitation token will be sent to the member's email address.</li>
           </ol>
           <h3>As the new member</h3>
           <ol>
             <li>Open BioAudit and choose the <strong>Join with an invite</strong> tab.</li>
             <li>Enter the email the invitation was sent to, choose a password, and paste the invitation token.</li>
-            <li>Press the join button. You are now part of the organisation and covered by its subscription.</li>
+            <li>Click the join button.</li>
           </ol>
           <p class="guide-note">Admins can also promote, suspend or remove members from the <strong>Members</strong> sub-tab, and cancel or renew the subscription from <strong>Subscription</strong>.</p>
         </article>
@@ -130,23 +131,24 @@
 </footer>
 
 <script>
-  const guideTabs = ["signup", "download", "signin", "members"];
+  const guideLinks = Array.from(document.querySelectorAll(".guide-tab"));
 
-  function showGuideTab(name) {
-    guideTabs.forEach((t) => {
-      document.getElementById("tab-" + t).setAttribute("aria-selected", String(t === name));
-      document.getElementById("sec-" + t).hidden = t !== name;
-    });
-    history.replaceState(null, "", "#" + name);
+  function setActive(id) {
+    guideLinks.forEach((l) =>
+      l.setAttribute("aria-current", String(l.getAttribute("href") === "#" + id))
+    );
   }
 
-  guideTabs.forEach((t) =>
-    document.getElementById("tab-" + t).addEventListener("click", () => showGuideTab(t))
-  );
+  // Highlight the tab for the section currently on screen
+  const guideObserver = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); });
+  }, { rootMargin: "-30% 0px -60% 0px" });
+  guideLinks.forEach((l) => guideObserver.observe(document.querySelector(l.getAttribute("href"))));
 
-  // Opening guide.html#signin goes straight to that tab
-  const startTab = location.hash.replace("#", "");
-  if (guideTabs.includes(startTab)) showGuideTab(startTab);
+  // Highlight straight away when a tab is clicked
+  guideLinks.forEach((l) =>
+    l.addEventListener("click", () => setActive(l.getAttribute("href").slice(1)))
+  );
 </script>
 <script src="js/main.js"></script>
 </body>
