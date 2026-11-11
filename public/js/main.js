@@ -137,3 +137,4 @@ document.querySelectorAll(".reveal").forEach(el => io.observe(el));
   }
   requestAnimationFrame(frameLoop);
 })();
+
