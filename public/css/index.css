@@ -76,7 +76,6 @@ h2 { font-weight: 300; }
 
 .hero h1 {
   font-weight: 400;
-  text-transform: uppercase;
   font-size: clamp(2rem, 3.6vw, 3.6rem);
   line-height: 1.08;
 }
