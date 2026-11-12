@@ -57,6 +57,11 @@ h2 { font-weight: 300; }
 
 /* ===== Hero ===== */
 .hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: calc(var(--header-h) + 64px) clamp(20px, 5vw, 96px) 60px;
 }
 
@@ -65,6 +70,9 @@ h2 { font-weight: 300; }
 .hero-main .hero-sub {
   margin: 32px 0 0 auto;
   text-align: right;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 30ch;
 }
 
 .hero-inner {
@@ -80,7 +88,7 @@ h2 { font-weight: 300; }
   line-height: 1.08;
 }
 
-.hero .btn { margin-top: 28px; }
+.hero .btn { display: inline-block; margin-top: 28px; }
 
 .hero-shot { margin: 0; }
 
@@ -164,6 +172,10 @@ h2 { font-weight: 300; }
 
 /* ===== Features: "Rules Decide. AI Explains." (four cards in one row) ===== */
 .features {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  align-items: start;
   padding: 120px clamp(20px, 5vw, 96px) 100px;
 }
 
@@ -271,7 +283,6 @@ h2 { font-weight: 300; }
 
 @media (max-width: 760px) {
   .cards { grid-template-columns: 1fr; }
-  .hero-shot { margin-top: 48px; }
   .step { grid-template-columns: 56px 1fr; padding-left: 20px; }
   .step-num { font-size: 2rem; }
 }
