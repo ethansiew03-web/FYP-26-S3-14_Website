@@ -257,7 +257,7 @@
         createBtn.textContent = "Create account";
         // Say nothing that tells a stranger whether this address already has an account
         show(err.status === 409
-          ? "We couldn't create this account. If you already have one, log in or reset your password."
+          ? "We could not create this account. If you already have one, log in or reset your password."
           : err.message);
         return;
       }
