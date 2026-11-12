@@ -32,10 +32,11 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* ===== Settings ===== */
-const PLAN_LENGTH_MONTHS = 12;   // both plans last a year
+const STUDENT_LENGTH_MONTHS = 36; // students get 3 years free, count starting from their signup date
+const PLAN_LENGTH_MONTHS = 12;   // organisation plan lasts for a year before auto renewal
 const WARN_DAYS = 30;            // start warning this many days before the end
 const PLANS = {
-    student: { name: "Student", price: "$0, valid for 12 months" },
+    student: { name: "Student", price: "$0, valid for 3 years" },
     organisation: { name: "Organisation", price: "$34.99/year" }
 };
 const FEATURES = [
@@ -119,7 +120,7 @@ function planDates() {
     toDate(profile.createdAt) ||
     (currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime) : new Date());
     const end = new Date(start);
-    end.setMonth(end.getMonth() + PLAN_LENGTH_MONTHS);
+    end.setMonth(end.getMonth() + (planKey() === "student" ? STUDENT_LENGTH_MONTHS : PLAN_LENGTH_MONTHS));
     const daysLeft = Math.ceil((end - new Date()) / 86400000);
     const total = (end - start) / 86400000;
     const usedPct = Math.min(100, Math.max(0, ((total - Math.max(daysLeft, 0)) / total) * 100));
@@ -156,7 +157,7 @@ function renderPlan() {
     banner.className = "banner " + (expired ? "bad" : "warn");
     if (key === "student") {
         $("expiry-banner-text").textContent = expired
-        ? "Your free student access ended on " + fmtDate(end) + ". Choose a plan to keep using BioAudit."
+        ? "Your free student access ended on " + fmtDate(end) + ". Your account has been suspended in the app."
         : "Your free student access ends in " + daysText(daysLeft) + ", on " + fmtDate(end) + ".";
     } else {
         $("expiry-banner-text").textContent = expired
@@ -167,7 +168,7 @@ function renderPlan() {
     banner.hidden = true;
     }
     const bannerBtn = $("banner-action");
-    bannerBtn.hidden = key === "student";
+    bannerBtn.hidden = key === "student";     // student not allowed to upgrade or join an organisation
     bannerBtn.textContent = key === "View plans";
     bannerBtn.onclick = key = () => { location.href = "plans.html"; };
 
@@ -183,24 +184,22 @@ function renderPlan() {
 
     let msg;
     if (key === "student") {
-    msg = expired
-        ? "Your 12 months of free student access ended on " + fmtDate(end) + "."
-        : "You have " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + " of free student access left. It ends on " + fmtDate(end) + ".";
-    $("sub-action").hidden = true;
+        msg = "";
     } else {
-    msg = expired
-        ? "Your plan expired on " + fmtDate(end) + ". Renew it to keep using BioAudit."
-        : "Your plan is paid up for another " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + ". It renews automatically on " + fmtDate(end) + ".";
-    $("sub-action").hidden = true;
+        msg = expired
+            ? "Your plan expired on " + fmtDate(end) + ". Renew it to keep using BioAudit."
+            : "Your plan is paid up for another " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + ". It renews automatically on " + fmtDate(end) + ".";
     }
+    $("sub-action").hidden = true;       // no upgrade button for students
     $("sub-message").textContent = msg;
+
     const studentNote = $("sub-note");
     studentNote.hidden = key !== "student";
     if (key === "student") {
-    $("sub-note-text").textContent = "*Student email will need to be verified every year. Failure to verify will lead to suspension of the account until verification is done. " +
-        "This account will only be active if you are a current student and have provided email verification. If you are no longer a student, this account will be suspended. " +
-        "If you wish to continue using BioAudit after your student email has expired, purchase the Organisation plan.";
-    }      
+        $("sub-note-text").textContent = "*Student email is verified only once, when you sign up. " +
+            "The student plan is free for 3 years from sign-up. After that, the account is suspended in the BioAudit app, " +
+            "but you can still log in to this dashboard.";
+    }
 
     const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
     $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
