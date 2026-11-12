@@ -196,7 +196,7 @@
 
       <form id="reset-section" novalidate hidden>
         <h1>Reset your password</h1>
-        <p class="lead">Enter the email you log in with and click Send code. A six-digit code will be sent to your email.</p>
+        <p class="lead">Enter the email you log in with and <strong>click</strong> Send code. A six-digit code will be sent to your email.</p>
 
         <label for="reset-email">Email</label>
         <input type="email" id="reset-email" placeholder="you@example.com" autocomplete="email" required />
@@ -373,7 +373,7 @@
       resetMessage.classList.remove("ok");
       const email = resetEmail.value.trim();
 
-      if (resetFields.hidden) { sendCode(); return; }
+      if (resetFields.hidden) return;
       if (!/^\d{6}$/.test(resetCode.value)) { resetMessage.textContent = "Enter the six-digit code from the email."; return; }
       const problem = passwordProblem(newPassword.value);
       if (problem) { resetMessage.textContent = problem; return; }
