@@ -33,10 +33,16 @@
 
     <div class="guide-layout">
       <nav class="guide-tabs" aria-label="Guide sections">
+        <p class="guide-tab-group">Set up your account</p>
         <a class="guide-tab" href="#sec-signup" aria-current="true">1. Sign up</a>
         <a class="guide-tab" href="#sec-download">2. Download BioAudit</a>
         <a class="guide-tab" href="#sec-signin">3. Sign in on BioAudit</a>
         <a class="guide-tab" href="#sec-members">4. Add members</a>
+
+        <p class="guide-tab-group">Set up your phone</p>
+        <a class="guide-tab" href="#sec-usb">1. USB debugging</a>
+        <a class="guide-tab" href="#sec-adb">2. Get ADB</a>
+        <a class="guide-tab" href="#sec-detect">3. Phone not detected</a>
       </nav>
 
       <div class="guide-body">
@@ -98,6 +104,50 @@
             <li>Click the join button.</li>
           </ol>
           <p class="guide-note">Admins can also promote, suspend or remove members from the <strong>Members</strong> sub-tab, and cancel or renew the subscription from <strong>Subscription</strong>.</p>
+        </article>
+
+        <div class="guide-group">
+          <h2>Set up your phone</h2>
+          <p>You only need this to assess an app on a real phone (the <strong>Assess a device</strong> page). Scanning an APK file needs no phone and no setup. Use a real phone, not an emulator. BioAudit is tested on Google Pixel phones running Android 12 or newer.</p>
+        </div>
+
+        <article class="guide-step" id="sec-usb">
+          <h2>1. Turn on USB debugging</h2>
+          <ol>
+            <li>On your phone, open <strong>Settings</strong>, then <strong>About phone</strong>, and tap <strong>Build number</strong> seven times until it says you are now a developer. On Samsung phones, Build number is under <strong>Software information</strong>.</li>
+            <li>Go back to <strong>Settings</strong>, open <strong>Developer options</strong> (usually under <strong>System</strong>) and turn on <strong>USB debugging</strong>.</li>
+            <li>Connect the phone to your computer with a USB cable that carries data. A charge-only cable will not work.</li>
+            <li>The first time BioAudit looks for your phone, the phone asks <strong>Allow USB debugging?</strong>. Unlock it and tap <strong>Allow</strong>.</li>
+          </ol>
+        </article>
+
+        <article class="guide-step" id="sec-adb">
+          <h2>2. Get ADB</h2>
+          <p>ADB is Google's tool that lets BioAudit talk to your phone. It is only needed for assessing a phone.</p>
+          <h3>The easy way</h3>
+          <ol>
+            <li>In BioAudit, open <strong>Assess a device</strong>.</li>
+            <li>If ADB is not set up on your computer, a <strong>Download ADB</strong> button appears next to the device list. Click it and confirm. BioAudit downloads Google's Platform-Tools (about 7 MB) into its own folder. Nothing is installed on Windows.</li>
+            <li>When BioAudit says ADB is ready, click <strong>Refresh</strong>. Your phone should appear in the list.</li>
+          </ol>
+          <h3>Set it up yourself (optional)</h3>
+          <ol>
+            <li>Download <strong>SDK Platform-Tools for Windows</strong> from <a href="https://developer.android.com/tools/releases/platform-tools" target="_blank" rel="noopener">developer.android.com</a> and unzip it, for example to <code>C:\platform-tools</code>.</li>
+            <li>Click the Start button, type <strong>Edit the system environment variables</strong>, open it and click <strong>Environment Variables</strong>.</li>
+            <li>Under <strong>User variables</strong>, select <strong>Path</strong>, click <strong>Edit</strong>, then <strong>New</strong>, and paste the folder path, for example <code>C:\platform-tools</code>. Click <strong>OK</strong> on every window.</li>
+            <li>Close and reopen BioAudit. To check, open Command Prompt and type <code>adb version</code>. If it shows a version number, ADB is ready.</li>
+          </ol>
+        </article>
+
+        <article class="guide-step" id="sec-detect">
+          <h2>3. If your phone is not detected</h2>
+          <p>Click <strong>Refresh</strong> after each fix. The device list tells you what is wrong:</p>
+          <ul>
+            <li><strong>"phone found, not allowed yet"</strong>: unlock the phone and tap <strong>Allow</strong> on its USB debugging prompt.</li>
+            <li><strong>"phone found but offline"</strong>: unplug the phone and plug it back in.</li>
+            <li><strong>"no device — check USB debugging"</strong>: make sure USB debugging is on, use a data cable and try another USB port. Windows also needs your phone's USB driver, which it normally installs when you connect the phone.</li>
+            <li><strong>"ADB is not set up on this computer"</strong>: click <strong>Download ADB</strong>. If you set ADB up yourself, open Command Prompt and type <code>adb devices</code>. If Windows says <code>adb</code> is not recognized, the Path step did not work, so repeat it or use <strong>Download ADB</strong> instead.</li>
+          </ul>
         </article>
       </div>
     </div>

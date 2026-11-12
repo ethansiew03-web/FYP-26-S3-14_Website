@@ -590,7 +590,7 @@ border-bottom: 2px solid var(--white);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 240px;
+  width: 260px;
 }
 .guide-tab {
   display: block;
@@ -606,12 +606,33 @@ border-bottom: 2px solid var(--white);
 .guide-tab:hover { filter: brightness(0.95); }
 .guide-tab[aria-current="true"] { background: #C9F2C4; border-left-width: 8px; padding-left: 12px; }
 
+/* A boxed label for each group of tabs, with the tabs indented underneath */
+.guide-tab-group {
+  padding: 12px 16px;
+  border: 1px solid var(--green);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+.guide-tab-group:not(:first-child) { margin-top: 18px; }
+.guide-tab { margin-left: 12px; }
+
+/* The line and the centred heading before the phone steps */
+.guide-group {
+  margin-top: 64px;
+  padding-top: 48px;
+  border-top: 1px solid rgba(237, 252, 235, 0.2);
+  text-align: center;
+}
+.guide-group h2 { font-weight: 500; font-size: 2.2rem; }
+.guide-group p { margin-top: 14px; line-height: 1.5; }
+.guide-group + .guide-step { margin-top: 40px; }
+
 .guide-body { width: 100%; }
 .guide-step { scroll-margin-top: calc(var(--header-h) + 24px); }
 .guide-step + .guide-step { margin-top: 64px; padding-top: 48px; border-top: 1px solid rgba(237, 252, 235, 0.2); }
 .guide-step h2 { font-weight: 500; font-size: 1.8rem; }
 .guide-step h3 { margin-top: 28px; font-weight: 500; font-size: 1.15rem; color: var(--green); }
-.guide-step ol { margin: 14px 0 0 1.3em; }
+.guide-step ol, .guide-step ul { margin: 14px 0 0 1.3em; }
 .guide-step li { margin-top: 10px; font-size: 1.05rem; line-height: 1.5; }
 .guide-step p { margin-top: 14px; line-height: 1.5; }
 .guide-note { font-size: 0.95rem; opacity: 0.85; }
@@ -620,5 +641,7 @@ border-bottom: 2px solid var(--white);
 @media (max-width: 1100px) {
   .guide-layout { grid-template-columns: 1fr; gap: 24px; }
   .guide-tabs { position: static; flex-direction: row; flex-wrap: wrap; width: auto; }
+  .guide-tab-group { width: 100%; }
+  .guide-tab { margin-left: 0; }
 }
 
