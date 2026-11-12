@@ -11,6 +11,7 @@
   --green: #22C55E;
   --line: #505050;
   --header-h: 130px;
+  --red: #FF0000;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -176,11 +177,11 @@ footer ul a {
   font-size: 0.95rem;
 }
 
-.mailing .consent input { width: 16px; height: 16px; accent-color: var(--green); }
+.mailing .consent input { width: 16px; height: 16px; accent-color: var(--red); }
 
 .mailing .btn { margin-top: 24px; width: 100%; max-width: 256px; padding: 10px; font-size: 0.95rem; }
 
-.mailing .form-msg { margin-top: 12px; min-height: 1.2em; font-size: 0.85rem; color: var(--green); }
+.mailing .form-msg { margin-top: 12px; min-height: 1.2em; font-size: 0.85rem; color: var(--red); }
 
 .contact { grid-column: 1 / -1; margin-top: 28px; font-size: 1rem; color: #9aa49a; }
 

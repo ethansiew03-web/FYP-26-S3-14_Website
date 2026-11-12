@@ -16,7 +16,7 @@ if (mailingForm) {
     const msg = document.getElementById("mail-msg");
     if (!email.checkValidity() || !email.value) { msg.textContent = "Enter a valid email address."; return; }
     if (!consent.checked) { msg.textContent = "Tick the box to agree to marketing emails."; return; }
-    msg.textContent = "Only for demonstration purposes.";
+    msg.textContent = "Feature coming soon.";
   });
 }
 
