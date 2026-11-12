@@ -169,8 +169,8 @@ function renderPlan() {
     }
     const bannerBtn = $("banner-action");
     bannerBtn.hidden = key === "student";     // student not allowed to upgrade or join an organisation
-    bannerBtn.textContent = key === "View plans";
-    bannerBtn.onclick = key = () => { location.href = "plans.html"; };
+    bannerBtn.textContent = "View plans";
+    bannerBtn.onclick = () => { location.href = "plans.html"; };
 
     // Subscription tab
     $("sub-name").textContent = plan.name;
