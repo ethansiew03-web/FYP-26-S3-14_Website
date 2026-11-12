@@ -656,6 +656,12 @@ border-bottom: 2px solid var(--white);
 .guide-group + .guide-step { margin-top: 40px; }
 
 .guide-step { position: relative; }
+.guide-step a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guide-step a:hover { color: var(--green); }
 .guide-step::before {
   content: "";
   position: absolute;
