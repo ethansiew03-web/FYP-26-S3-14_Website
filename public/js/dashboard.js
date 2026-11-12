@@ -167,8 +167,9 @@ function renderPlan() {
     banner.hidden = true;
     }
     const bannerBtn = $("banner-action");
-    bannerBtn.textContent = key === "student" ? "Upgrade to Organisation" : "View plans";
-    bannerBtn.onclick = key === "student" ? () => goToCheckout(bannerBtn) : () => { location.href = "plans.html"; };
+    bannerBtn.hidden = key === "student";
+    bannerBtn.textContent = key === "View plans";
+    bannerBtn.onclick = key = () => { location.href = "plans.html"; };
 
     // Subscription tab
     $("sub-name").textContent = plan.name;
@@ -185,9 +186,7 @@ function renderPlan() {
     msg = expired
         ? "Your 12 months of free student access ended on " + fmtDate(end) + "."
         : "You have " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") + " of free student access left. It ends on " + fmtDate(end) + ".";
-    $("sub-action").textContent = "Upgrade to Organisation";
-    $("sub-action").hidden = false;
-    $("sub-action").onclick = () => goToCheckout($("sub-action"));
+    $("sub-action").hidden = true;
     } else {
     msg = expired
         ? "Your plan expired on " + fmtDate(end) + ". Renew it to keep using BioAudit."
@@ -200,7 +199,7 @@ function renderPlan() {
     if (key === "student") {
     $("sub-note-text").textContent = "*Student email will need to be verified every year. Failure to verify will lead to suspension of the account until verification is done. " +
         "This account will only be active if you are a current student and have provided email verification. If you are no longer a student, this account will be suspended. " +
-        "If you wish to continue using BioAudit after your student email has expired, purchase the Organsiation plan.";
+        "If you wish to continue using BioAudit after your student email has expired, purchase the Organisation plan.";
     }      
 
     const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
