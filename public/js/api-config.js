@@ -4,5 +4,5 @@
  * https://bioaudit.me must be listed in the backend's CORS_ORIGINS setting.
  */
 window.bioauditApi = {
-  base: "https://bioaudit-api-391854054876.us-central1.run.app/api"
+  base: "https://bioaudit-api-391854054876.us-central1.run.app/api",
 };

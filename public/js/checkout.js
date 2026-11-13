@@ -10,14 +10,7 @@
  * The browser never decides whether someone has paid. After payment, the server
  * function in functions/index.js upgrades the account.
  */
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { collection, query, where, getDocs, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 /* Finds the active yearly price of the Organisation product (synced from Stripe). */
 async function findOrganisationPrice(db) {
@@ -42,7 +35,7 @@ export async function startCheckout(db, uid) {
     price,
     mode: "subscription",
     success_url: new URL("dashboard.html?checkout=success", window.location.href).href,
-    cancel_url: new URL("dashboard.html?checkout=cancelled", window.location.href).href
+    cancel_url: new URL("dashboard.html?checkout=cancelled", window.location.href).href,
   });
 
   return new Promise((resolve, reject) => {
@@ -51,21 +44,25 @@ export async function startCheckout(db, uid) {
       reject(new Error("Stripe took too long to respond. Please try again."));
     }, 30000);
 
-    const stop = onSnapshot(sessionRef, (snap) => {
-      const data = snap.data() || {};
-      if (data.error) {
+    const stop = onSnapshot(
+      sessionRef,
+      (snap) => {
+        const data = snap.data() || {};
+        if (data.error) {
+          clearTimeout(timer);
+          stop();
+          reject(new Error(data.error.message || "Couldn't start checkout."));
+        } else if (data.url) {
+          clearTimeout(timer);
+          stop();
+          window.location.assign(data.url);
+          resolve();
+        }
+      },
+      (err) => {
         clearTimeout(timer);
-        stop();
-        reject(new Error(data.error.message || "Couldn't start checkout."));
-      } else if (data.url) {
-        clearTimeout(timer);
-        stop();
-        window.location.assign(data.url);
-        resolve();
-      }
-    }, (err) => {
-      clearTimeout(timer);
-      reject(err);
-    });
+        reject(err);
+      },
+    );
   });
 }

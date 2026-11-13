@@ -11,11 +11,14 @@
 (function () {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $ = (sel) => document.querySelector(sel);
-  const clamp01 = v => Math.max(0, Math.min(1, v));
-  const smooth = (a, b, v) => { const t = clamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  const smooth = (a, b, v) => {
+    const t = clamp01((v - a) / (b - a));
+    return t * t * (3 - 2 * t);
+  };
 
-  const hero        = $(".hero");
-  const ctaSect     = $(".cta");
+  const hero = $(".hero");
+  const ctaSect = $(".cta");
   const parallaxEls = Array.from(document.querySelectorAll("[data-parallax]"));
 
   let H = window.innerHeight;
@@ -23,8 +26,8 @@
 
   // Works out how visible the particles / planet are for the current scroll position
   function measure() {
-    const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;   // px from top of screen
-    const ctaTop     = ctaSect ? ctaSect.getBoundingClientRect().top : H * 2;
+    const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0; // px from top of screen
+    const ctaTop = ctaSect ? ctaSect.getBoundingClientRect().top : H * 2;
 
     // Particles: full while the hero is on screen, gone once it has scrolled away
     S.particles = 1 - smooth(H * 0.85, H * 0.25, heroBottom);
@@ -33,20 +36,24 @@
     S.planet = smooth(H * 0.85, H * 0.25, heroBottom) * (1 - smooth(H * 1.0, H * 0.55, ctaTop));
 
     // Rise: 0 -> 1 across the whole stretch the planet is on screen
-    const total = (ctaTop - H * 0.55) - (heroBottom - H * 0.25);
+    const total = ctaTop - H * 0.55 - (heroBottom - H * 0.25);
     S.rise = smooth(0, 1, clamp01((H * 0.25 - heroBottom) / Math.max(1, total)));
   }
 
   // The planet horizon (same look as the original design)
   function drawPlanet(ctx, W, H) {
-    const reveal = S.planet, rise = S.rise;
+    const reveal = S.planet,
+      rise = S.rise;
     if (reveal <= 0) return;
     ctx.globalAlpha = reveal;
 
     // Hazy grey-blue sky
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, "#5E6B78"); sky.addColorStop(0.5, "#7C8692"); sky.addColorStop(1, "#4A535D");
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    sky.addColorStop(0, "#5E6B78");
+    sky.addColorStop(0.5, "#7C8692");
+    sky.addColorStop(1, "#4A535D");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
 
     // Huge planet: its edge peaks off the left and slopes down to the right
     const R = W * 2.4;
@@ -54,28 +61,43 @@
     const edgeY = H * (1.15 - 0.85 * rise);
     const cy = edgeY + R;
 
-    const rims = [["rgba(225,230,235,0.35)", 34], ["rgba(150,158,168,0.55)", 20], ["rgba(95,102,112,0.8)", 9]];
+    const rims = [
+      ["rgba(225,230,235,0.35)", 34],
+      ["rgba(150,158,168,0.55)", 20],
+      ["rgba(95,102,112,0.8)", 9],
+    ];
     for (const [col, off] of rims) {
       ctx.fillStyle = col;
-      ctx.beginPath(); ctx.arc(cx, cy, R + off, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R + off, 0, Math.PI * 2);
+      ctx.fill();
     }
     const body = ctx.createLinearGradient(0, edgeY, 0, edgeY + H * 0.9);
-    body.addColorStop(0, "#4B525B"); body.addColorStop(0.35, "#262B32"); body.addColorStop(1, "#05070A");
+    body.addColorStop(0, "#4B525B");
+    body.addColorStop(0.35, "#262B32");
+    body.addColorStop(1, "#05070A");
     ctx.fillStyle = body;
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fill();
 
     // Dark shadow sweeping in from the bottom-left
     const shade = ctx.createRadialGradient(0, H, 0, 0, H, Math.max(W, H) * 0.9);
-    shade.addColorStop(0, "rgba(0,0,0,0.85)"); shade.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = shade; ctx.fillRect(0, 0, W, H);
+    shade.addColorStop(0, "rgba(0,0,0,0.85)");
+    shade.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, W, H);
     ctx.globalAlpha = 1;
   }
 
   // main.js calls these every frame
   window.bgScene = {
-    before(ctx, w, h) { H = h; measure(); },       // runs first: work out the numbers
-    particles: () => S.particles,                  // 0 - 1 brightness of the particle field
-    after: drawPlanet                              // runs last: planet is drawn over the particles
+    before(ctx, w, h) {
+      H = h;
+      measure();
+    }, // runs first: work out the numbers
+    particles: () => S.particles, // 0 - 1 brightness of the particle field
+    after: drawPlanet, // runs last: planet is drawn over the particles
   };
 
   /* ===== Parallax on the screenshots ===== */
@@ -83,7 +105,10 @@
     const h = window.innerHeight;
     const off = reduceMotion || window.innerWidth < 760;
     for (const el of parallaxEls) {
-      if (off) { el.style.setProperty("--py", "0px"); continue; }
+      if (off) {
+        el.style.setProperty("--py", "0px");
+        continue;
+      }
       const pr = el.parentElement.getBoundingClientRect();
       const centre = pr.top + pr.height / 2 - h / 2;
       el.style.setProperty("--py", (-centre * parseFloat(el.dataset.parallax)).toFixed(1) + "px");

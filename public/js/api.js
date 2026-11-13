@@ -23,7 +23,7 @@ export async function api(method, path, body, user) {
     response = await fetch(base + path, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch (err) {
     console.error("BioAudit server unreachable:", err);
