@@ -65,7 +65,7 @@
     </div>
   </main>
 
-  <!-- Load config FIRST -->
+  <!-- Load config first -->
   <script src="js/firebase-config.js"></script>
   <script src="js/api-config.js"></script>
 
@@ -144,7 +144,7 @@
     universitySelect.addEventListener("change", () => { updateUniversityHint(); resetCode(); });
     $("email").addEventListener("input", () => { if (sentTo && cleanEmail() !== sentTo) resetCode(); });
 
-    /* Keep only digits, so that "1 2 3 4 5 6" pastes as 123456 */
+    // Keep only the digits, at most six, so a pasted "1 2 3 4 5 6" still works
     $("code").addEventListener("input", (e) => {
       e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
     });
@@ -168,8 +168,8 @@
       cooldownTimer = setInterval(tick, 1000);
     }
 
-    // The server only finds out an address doesn't exist once the mail server answers, a few
-    // seconds after the code is sent. So we ask every few seconds for a couple of minutes.
+    // The server only finds out an address does not exist once the mail server answers, a few
+    // seconds after the code is sent.  So we ask every few seconds for a couple of minutes.
     async function watchForBounce(email, id, token) {
       const stopAt = Date.now() + BOUNCE_WATCH_MS;
       while (Date.now() < stopAt && token === watchToken) {
@@ -241,8 +241,7 @@
         if (universitySelect.value !== NOT_LISTED) body.universityId = universitySelect.value;
         await api("POST", "/auth/register", body);
 
-        // The backend created the account and marked it verified. Now sign in here so the
-        // dashboard knows who is logged in.
+        // The backend created the account and marked it verified.
         await signInWithEmailAndPassword(auth, email, password);
         window.location.href = "dashboard.html";
       } catch (err) {

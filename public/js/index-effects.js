@@ -40,7 +40,7 @@
     S.rise = smooth(0, 1, clamp01((H * 0.25 - heroBottom) / Math.max(1, total)));
   }
 
-  // The planet horizon (same look as the original design)
+  // The planet horizon
   function drawPlanet(ctx, W, H) {
     const reveal = S.planet,
       rise = S.rise;

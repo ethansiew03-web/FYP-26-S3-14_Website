@@ -6,10 +6,9 @@
  * automatically each year until the admin cancels. Cancelling keeps everyone's access
  * until the end of the paid year; after that the admin and every member are suspended
  * until the subscription is renewed. Only an admin can cancel. The server enforces
- * that; the buttons on the dashboard are only hidden from members for convenience.
+ * that, and the dashboard hides the buttons from members.
  *
- * Requests carry the signed-in user's Firebase ID token, which is what the backend
- * checks.
+ * Every request carries the signed-in user's Firebase ID token, which the backend checks.
  */
 import { api } from "./api.js";
 

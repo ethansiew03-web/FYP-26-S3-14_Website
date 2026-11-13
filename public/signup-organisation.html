@@ -244,7 +244,7 @@
       }
 
       // Payment. The account is upgraded by the server once Stripe confirms payment.
-      // If checkout can't open, the dashboard offers a "Pay for subscription" button instead.
+      // If checkout is unable to open, the dashboard offers a "Pay for subscription" button instead.
       show("Account created. Opening checkout…", true);
       try {
         await startCheckout(db, uid);

@@ -1,3 +1,5 @@
+// Firebase web settings. These only identify the project and are fine to be public,
+// the data is protected by the Firebase security rules.
 window.firebaseConfig = {
   apiKey: "AIzaSyD62tgVngos55efFgP-GG3C0ID0O8onmaM",
   authDomain: "bioaudit-38ae4.firebaseapp.com",

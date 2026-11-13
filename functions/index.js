@@ -1,14 +1,14 @@
 /**
  * Switches a BioAudit account to the paid tier when its Stripe subscription becomes active.
  *
- * The "Run Payments with Stripe" extension records each subscription under
+ * The "Run Payments with Stripe" extension saves each subscription under
  * customers/{uid}/subscriptions/{id}. This function watches those records and
- * updates users/{uid} the same way the backend's own setTier() does: the tier
- * and subscription fields on the user record, plus the tier custom claim on
- * the login, which the desktop app's backend also checks.
+ * updates users/{uid} the same way the backend's own setTier() does: the tier and
+ * subscription fields on the user record, plus the tier claim on their sign-in
+ * account, which the desktop app's backend also checks.
  *
  * Only Stripe (through the extension) can write subscription records, so the
- * browser can never trigger an upgrade by itself.
+ * browser can never upgrade an account by itself.
  */
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { logger } = require("firebase-functions");
@@ -19,8 +19,7 @@ const { getAuth } = require("firebase-admin/auth");
 initializeApp();
 const db = getFirestore();
 
-// The only status that means the customer has actually paid. "trialing" is
-// deliberately NOT included: a free trial must not unlock the paid plan.
+// The only status that means the customer has paid.
 const PAID_STATUS = "active";
 
 exports.syncSubscriptionTier = onDocumentWritten(
@@ -33,8 +32,7 @@ exports.syncSubscriptionTier = onDocumentWritten(
     const after = event.data && event.data.after.exists ? event.data.after.data() : null;
     const status = after ? after.status : "canceled"; // a deleted record counts as ended
 
-    // Any other status (trialing, past_due, canceled...) leaves the account as it is.
-    // An account keeps its type even after the paid year is over.
+    // An account also keeps its tier after the paid year is over.
     if (status !== PAID_STATUS) {
       logger.info(`Subscription for ${uid} is "${status}"; no change`);
       return;
@@ -45,10 +43,10 @@ exports.syncSubscriptionTier = onDocumentWritten(
       ? after.current_period_start
       : FieldValue.serverTimestamp();
 
-    // Upgrade, and give a first-time Organisation customer their organisation,
-    // the same way the backend's register-admin does: an organisations document
-    // with them as owner, admin and member, linked from their user record.
-    // Runs in a transaction so a repeated Stripe event can't create two.
+    // Upgrade the account. A first-time Organisation customer also gets their organisation,
+    // the same way the backend's register-admin does: an organisations document with them
+    // as owner, admin and member, linked from their user record.
+    // This runs in a transaction so a repeated Stripe event is unable to create two.
     const result = await db.runTransaction(async (tx) => {
       const snap = await tx.get(userRef);
       if (!snap.exists) return null;
@@ -88,7 +86,7 @@ exports.syncSubscriptionTier = onDocumentWritten(
       return;
     }
 
-    // Keep the login's custom claims in step, as the backend's setClaims() does
+    // Update the sign-in claims to match, as the backend's setClaims() does
     await getAuth().setCustomUserClaims(uid, { tier: "premium", role: result.role, organisationId: result.orgId });
 
     logger.info(`Set ${uid} to premium, role ${result.role}, organisation ${result.orgId}`);

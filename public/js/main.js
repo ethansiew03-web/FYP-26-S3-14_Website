@@ -1,5 +1,5 @@
 /* main.js - JavaScript shared by every page that uses styles.css.
-   1. Mailing list form (checks the fields only, does NOT save emails yet)
+   1. Mailing list form (only checks the fields for now, it does not save emails yet)
    2. Fade-in on scroll (.reveal)
    3. Animated particle background on <canvas id="bg">
       index.html also loads js/index-effects.js (before this file). That file sets
@@ -36,7 +36,7 @@ const io = new IntersectionObserver(
       }
     });
   },
-  { threshold: 0.15 },
+  { threshold: 0.15 }, // fade in once 15% of the element is on screen
 );
 document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
@@ -61,13 +61,13 @@ document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
   const between = (a, b) => a + rand() * (b - a);
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-  // ---- Settings you can tweak ----
+  // Animation settings that can be adjusted to change how the particle field looks and moves
   const DEPTH = 60,
     SPREAD = 45,
     SPEED = 1.6,
     HORIZON = 0.42;
 
-  // ---- Build the particle field ----
+  // ---- Particle field ----
   const pts = [];
   const add = (x, y, z) => pts.push({ x, y, z, b: between(1, 1), tw: rand() * Math.PI * 2 });
   for (let c = 0; c < 55; c++) {
@@ -140,7 +140,7 @@ document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
   function draw(time, camZ) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Background colour (same navy as the header)
+    // Background colour
     ctx.fillStyle = "#1E293B";
     ctx.fillRect(0, 0, W, H);
 
@@ -151,7 +151,7 @@ document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
   layout();
 
-  // Visitors who prefer reduced motion get a still picture instead of an animation
+  // Visitors with "reduced motion" turned on in their systems get a still picture instead of an animation
   if (reduceMotion) {
     const still = () => draw(0, 0);
     if (scene) window.addEventListener("scroll", still, { passive: true });

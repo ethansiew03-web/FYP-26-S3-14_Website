@@ -28,12 +28,12 @@ const db = getFirestore(app);
 /* ===== Settings ===== */
 const STUDENT_LENGTH_MONTHS = 36; // students get 3 years free, count starting from their signup date
 const PLAN_LENGTH_MONTHS = 12; // organisation plan lasts for a year before auto renewal
-const WARN_DAYS = 30; // start warning this many days before the end
+const WARN_DAYS = 30; // tells users they have 30 days before renewl/suspension
 const PLANS = {
   student: { name: "Student", price: "$0, valid for 3 years" },
   organisation: { name: "Organisation", price: "$34.99/year" },
 };
-// "What's included" lists. Same wording as the plans page.
+// Plan details
 const FEATURES = {
   student: [
     "Black-box scanning of any Android app, no source code or root access needed",
@@ -56,7 +56,7 @@ const FEATURES = {
 const TICK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
 const SEVERITIES = ["critical", "high", "medium", "low", "info"];
 
-// Set by Stripe when it sends the person back here: "success" or "cancelled"
+// Stripe adds ?checkout=success or ?checkout=cancelled when it redirects the user back to the dashboard
 const checkoutResult = new URLSearchParams(location.search).get("checkout");
 
 /* ===== Small helpers ===== */
@@ -80,7 +80,7 @@ let scans = [];
 let memberScans = []; // admins only: the scans of every member, newest first
 let memberReportsState = "idle"; // idle, loading, done or failed
 
-/* ===== Tabs ===== */
+/* ===== Side tabs ===== */
 const tabs = ["overview", "reports", "account", "subscription"];
 function showTab(name) {
   tabs.forEach((t) => {
@@ -89,7 +89,7 @@ function showTab(name) {
     $("sec-" + t).hidden = !selected;
   });
   history.replaceState(null, "", "#" + name);
-  // Admins: load the members' reports the first time Reports is opened
+  // Admins: load the members' reports the first time Reports tab is opened
   if (name === "reports" && isOrgAdmin() && memberReportsState === "idle") loadMemberReports();
 }
 tabs.forEach((t) => $("tab-" + t).addEventListener("click", () => showTab(t)));
@@ -201,11 +201,11 @@ function renderFeatures(key) {
  *
  * One yearly subscription covers the whole organisation, and the BioAudit server (the
  * same one the desktop app uses) decides its state:
- *   active     paid and set to renew automatically each year
- *   cancelling cancelled; everyone keeps access until the end of the paid year
- *   ended      the paid year is over; the admin and every member are suspended
- *   unpaid     signed up in the app but not paid yet
- *   none       not billed (an organisation from before billing)
+ *   active:     paid and set to renew automatically each year
+ *   cancelling: cancelled; everyone keeps access until the end of the paid year
+ *   ended:      the paid year is over; the admin and every member are suspended
+ *   unpaid:     signed up in the app but not paid yet
+ *   none:       not billed (an organisation from before billing)
  *
  * renderPlan() hands over to renderOrganisation() for the first four states.
  * Otherwise the plain Student / Organisation view above is used.
@@ -250,8 +250,7 @@ function renderOrganisation() {
   const when = end ? fmtDate(end) : "the end of the paid year";
   const daysLeft = end ? Math.ceil((end - new Date()) / 86400000) : 0;
   const live = s.state === "active" || s.state === "cancelling";
-  // Stripe can leave the old period end on a subscription that was ended early, so
-  // only call it "Ended on <date>" when that date has actually passed
+  // An early cancelled subscription can still carry its old end date, so only say "Ended on <date>" once it is in the past
   const endPassed = !!end && end <= new Date();
 
   // Account tab (renderProfile() ran just before this and wrote the plain plan name)
@@ -304,7 +303,7 @@ function renderOrganisation() {
   badge.textContent = { active: "Active", cancelling: "Cancelled", ended: "Suspended", unpaid: "Payment needed" }[s.state];
   badge.className = "badge " + { active: "good", cancelling: "warn", ended: "bad", unpaid: "warn" }[s.state];
 
-  // The server gives only the end of the paid year, so the year is counted back from it
+  // The server only sends the end date, so the start of the paid year is worked out by going back one year
   let pct = s.state === "ended" ? 100 : 0;
   let startText = "";
   if (live && end) {
@@ -452,18 +451,17 @@ async function refreshOrg() {
     renderPlan();
   }
 }
-// Once, when the page first loads: the page waits for this, so it doesn't flash the wrong plan first
+// Runs once when the page loads, and the page waits on it so users do not see the wrong plan flash up first
 function startOrganisation() {
   orgFor = profile.organisationId || null;
   return refreshOrg();
 }
-// On every profile update: notice an organisation joined or created while the page is open
+// On each profile update, check whether the user has just joined or created an organisation
 function syncOrganisation() {
   if (!started || (profile.organisationId || null) === orgFor) return;
   orgFor = profile.organisationId || null;
   refreshOrg();
 }
-// Pick up a cancel or renewal made in the app when the person comes back to this tab
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && started) refreshOrg();
 });
@@ -505,9 +503,9 @@ function scanType(s) {
   return s.type === "device" ? "Device test" : s.type === "apk" ? "APK scan" : cap(s.type || "Scan");
 }
 
-// The scans shown in the Reports table: the members' for an admin, otherwise your own
+// Reports table: an admin sees their members' scans, while members and students sees their own scans
 const tableScans = () => (isOrgAdmin() ? memberScans : scans);
-
+// Draws the Reports table from tableScans(), with loading and empty messages
 function renderScans() {
   const admin = isOrgAdmin();
   const list = tableScans();
@@ -744,7 +742,7 @@ function printReport(s) {
   setTimeout(() => w.print(), 300); // short wait so the new page has laid out
 }
 
-/* Admins: the scans of every member, with their names. The server records each of these reads. */
+/* Admins only: fetch every member's scans and attach their names. The server logs each read. */
 async function loadMemberReports() {
   if (!isOrgAdmin() || memberReportsState === "loading") return;
   memberReportsState = "loading";

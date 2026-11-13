@@ -20,6 +20,7 @@ body {
   flex-direction: column;
 }
 
+/* The star video sits behind the page, and the content (z-index 1) sits on top of it */
 .bg-video {
   position: fixed;
   inset: 0;
@@ -128,7 +129,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   outline-offset: 3px;
 }
 
-#message { margin-top: 14px; min-height: 1.2em; font-size: 0.85rem; color: var(--red); line-height: 1.5; }
+/* Messages are red for errors, and green when the "ok" class is added */
+#message { margin-top: 14px;
+  min-height: 1.2em;
+  font-size: 0.85rem;
+  color: var(--red);
+  line-height: 1.5; 
+}
 #message.ok { color: var(--good); }
 
 .switch { margin-top: 20px; font-size: 0.85rem; color: var(--dim); text-align: center; }

@@ -1,7 +1,10 @@
 /* styles.css - shared by every page except login, sign-up forms, dashboard and terms.
-   Part 1 = shared by every page. Parts 2-5 = page-specific rules.
+   Part 1 = shared by every page. Parts 2-5 = page specific rules.
    Rules that clash between pages are scoped with a class on <html>. */
 
+/* ==========================================
+   PART 1
+   ==========================================*/   
 /* ===== Colours (same on every page) ===== */
 :root {
   --black: #000000;
@@ -121,7 +124,7 @@ position: relative;
   text-underline-offset: 5px;
 }
 
-/* ===== Footer (same as the homepage) ===== */
+/* ===== Footer ===== */
 footer {
   background: var(--black);
   display: grid;
@@ -455,7 +458,7 @@ border-bottom: 2px solid var(--white);
   align-items: start;
 }
 
-/* Tabs stay on screen at the left edge while you scroll */
+/* Tabs stay on screen at the left edge while scrolling */
 .guide-tabs {
   position: sticky;
   top: calc(var(--header-h) + 24px);

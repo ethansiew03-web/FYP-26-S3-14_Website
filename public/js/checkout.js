@@ -12,7 +12,7 @@
  */
 import { collection, query, where, getDocs, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-/* Finds the active yearly price of the Organisation product (synced from Stripe). */
+/* Finds the Organisation plan's price: the first active recurring price synced from Stripe. */
 async function findOrganisationPrice(db) {
   const products = await getDocs(query(collection(db, "products"), where("active", "==", true)));
   for (const product of products.docs) {
@@ -24,9 +24,8 @@ async function findOrganisationPrice(db) {
 }
 
 /*
- * db:  the Firestore instance
- * uid: the signed-in user's id
- * Returns a promise that only rejects on error; on success the page navigates to Stripe.
+ * Starts checkout for the signed-in user (db is Firestore, uid is their id).
+ * On success the browser moves to Stripe. If something goes wrong, the promise rejects with a message.
  */
 export async function startCheckout(db, uid) {
   const price = await findOrganisationPrice(db);
@@ -38,6 +37,7 @@ export async function startCheckout(db, uid) {
     cancel_url: new URL("dashboard.html?checkout=cancelled", window.location.href).href,
   });
 
+  // Wait for the extension to write the Stripe link back, and give up after 30 seconds
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       stop();
