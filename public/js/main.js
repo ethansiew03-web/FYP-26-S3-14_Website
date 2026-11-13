@@ -1,4 +1,4 @@
-/* main.js - JavaScript for about, index, learn-more and plans.
+/* main.js - JavaScript shared by every page that uses styles.css.
    1. Mailing list form (checks the fields only, does NOT save emails yet)
    2. Fade-in on scroll (.reveal)
    3. Animated particle background on <canvas id="bg">
@@ -14,7 +14,7 @@ if (mailingForm) {
     const email = document.getElementById("mail-email");
     const consent = document.getElementById("mail-consent");
     const msg = document.getElementById("mail-msg");
-    if (!email.checkValidity() || !email.value) { msg.textContent = "Enter a valid email address."; return; }
+    if (!email.checkValidity()) { msg.textContent = "Enter a valid email address."; return; }
     if (!consent.checked) { msg.textContent = "Tick the box to agree to marketing emails."; return; }
     msg.textContent = "Feature coming soon.";
   });

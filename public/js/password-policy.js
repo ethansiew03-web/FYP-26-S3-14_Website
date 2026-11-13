@@ -6,8 +6,7 @@
  * passwordProblem(password) returns what is wrong, or null when the password is fine.
  */
 
-export const MIN_LENGTH = 12;
-export const PASSWORD_HINT = "At least 12 characters with upper, lower, a digit and a symbol";
+const MIN_LENGTH = 12;
 
 const COMMON = new Set([
   "password", "passw0rd", "p@ssw0rd", "p@ssword", "qwerty", "qwertyuiop", "letmein",
@@ -16,6 +15,8 @@ const COMMON = new Set([
   "123456", "12345678", "123456789", "1234567890", "111111", "000000", "asdfgh",
   "zxcvbn", "starwars", "whatever", "freedom", "master", "login", "hello"
 ]);
+// Words of 6+ letters are also rejected when they are all the password's letters ("Password1!")
+const COMMON_WORDS = new Set([...COMMON].filter((word) => /^[a-z]{6,}$/.test(word)));
 
 export function passwordProblem(password) {
   if (password.length < MIN_LENGTH) return "Use at least " + MIN_LENGTH + " characters.";
@@ -25,12 +26,7 @@ export function passwordProblem(password) {
   if (!/\d/.test(password)) return "Add a digit.";
   if (!/[^\p{L}\d]/u.test(password)) return "Add a symbol (such as ! ? # $).";
   const letters = password.toLowerCase().replace(/[^\p{L}]/gu, "");
-  for (const word of COMMON) {
-    if (/^[a-z]{6,}$/.test(word) && letters === word) {
-      return "That password is too common. Choose something less guessable.";
-    }
-  }
-  if (COMMON.has(password.toLowerCase()) || new Set(password).size <= 3) {
+  if (COMMON_WORDS.has(letters) || COMMON.has(password.toLowerCase()) || new Set(password).size <= 3) {
     return "That password is too common. Choose something less guessable.";
   }
   return null;

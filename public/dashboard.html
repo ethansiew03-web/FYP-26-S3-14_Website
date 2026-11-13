@@ -50,22 +50,18 @@
           <div class="card stat">
             <div class="label">Plan</div>
             <div class="value" id="ov-plan">–</div>
-            <div class="note" id="ov-plan-note"></div>
           </div>
           <div class="card stat">
             <div class="label">Time left</div>
             <div class="value" id="ov-days">–</div>
-            <div class="note" id="ov-days-note"></div>
           </div>
-          <div class="card stat">
+          <div class="card stat member-only">
             <div class="label">Scans saved</div>
             <div class="value" id="ov-scans">–</div>
-            <div class="note" id="ov-scans-note"></div>
           </div>
-          <div class="card stat">
+          <div class="card stat member-only">
             <div class="label">Latest scan</div>
             <div class="value" id="ov-latest" style="font-size: 1.1rem">–</div>
-            <div class="note" id="ov-latest-note"></div>
           </div>
         </div>
 
@@ -77,7 +73,7 @@
           <a class="btn" href="https://github.com/FYP-UOW-2026/Final_Year_Project/releases/latest/download/BioAudit.exe" download>Download for Windows</a>
         </div>
 
-        <div class="card" style="margin-top: 20px">
+        <div class="card member-only" style="margin-top: 20px">
           <h2>Latest scan findings</h2>
           <div id="ov-latest-findings" style="margin-top: 16px"></div>
         </div>
@@ -157,7 +153,7 @@
           <p class="checkout-error" id="sub-error" role="alert"></p>
 
           <div style="margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap">
-            <button class="btn" type="button" id="sub-action">Upgrade to Organisation</button>
+            <button class="btn" type="button" id="sub-action" hidden>Continue</button>
             <button class="btn btn-ghost" type="button" id="sub-portal" hidden>Manage billing</button>
             <a class="btn btn-ghost" href="plans.html">Compare plans</a>
           </div>
@@ -176,7 +172,7 @@
     </main>
   </div>
 
-  <!-- Cancel subscription: confirm first, because it affects everyone in the organisation -->
+  <!-- Cancel subscription: affects all accounts in the organisation -->
   <dialog id="cancel-dialog" aria-labelledby="cancel-title">
     <form method="dialog" id="cancel-form">
       <h2 id="cancel-title">Cancel subscription?</h2>
@@ -191,7 +187,7 @@
     </form>
   </dialog>
 
-  <!-- Load config FIRST -->
+  <!-- Load config first -->
   <script src="js/firebase-config.js"></script>
   <script src="js/api-config.js"></script>
   

@@ -7,7 +7,6 @@ import {
 import {
     getFirestore,
     doc,
-    getDoc,
     onSnapshot,
     collection,
     query,
@@ -15,7 +14,6 @@ import {
     limit,
     getDocs
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-import { startCheckout } from "./checkout.js";
 import {
     loadMyOrganisation,
     cancelSubscription,
@@ -39,17 +37,31 @@ const PLANS = {
     student: { name: "Student", price: "$0, valid for 3 years" },
     organisation: { name: "Organisation", price: "$34.99/year" }
 };
-const FEATURES = [
-    "Black-box scanning of any Android app, no source code or root access needed",
-    "Authentication bypass detection",
-    "Side-channel leak detection",
-    "Plain-language explanations with a concrete fix for every finding",
-    "Export scan reports as HTML or PDF",
-    "Compare two scans side by side",
-    "Scan history saved to your account",
-    "Team management for organisations"
-];
+// "What's included" lists. Same wording as the plans page.
+const FEATURES = {
+    student: [
+        "Black-box scanning of any Android app, no source code or root access needed",
+        "Authentication bypass detection",
+        "Side-channel leak detection",
+        "20 plain-language explanations with a concrete fix for every finding per month",
+        "Up to 10 latest scans saved to your account history"
+    ],
+    organisation: [
+        "Black-box scanning of any Android app, no source code or root access needed",
+        "Authentication bypass detection",
+        "Side-channel leak detection",
+        "Unlimited plain-language explanations with a concrete fix for every finding",
+        "Export scan reports as HTML or PDF",
+        "Compare two scans side by side",
+        "Unlimited scans saved to your account history",
+        "Team management for organisations"
+    ]
+};
+const TICK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
 const SEVERITIES = ["critical", "high", "medium", "low", "info"];
+
+// Set by Stripe when it sends the person back here: "success" or "cancelled"
+const checkoutResult = new URLSearchParams(location.search).get("checkout");
 
 /* ===== Small helpers ===== */
 const $ = (id) => document.getElementById(id);
@@ -65,6 +77,7 @@ const fmtDateTime = (d) => d ? d.toLocaleString("en-AU", { day: "numeric", month
 const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
 
 let currentUser = null;
+let started = false;              // true once the first profile snapshot has been shown
 let profile = {};
 let scans = [];
 let memberScans = [];             // admins only: the scans of every member, newest first
@@ -89,31 +102,6 @@ function planKey() {
     const tier = (profile.tier || "").toLowerCase();
     return (tier === "organisation" || tier === "premium") ? "organisation" : "student";
 }
-// Chose Organisation at sign-up but hasn't paid yet
-function isPending() {
-    return planKey() === "student" && profile.requestedPlan === "organisation";
-}
-
-/* ===== Stripe checkout ===== */
-let checkingOut = false;
-async function goToCheckout(btn) {
-    if (checkingOut) return;
-    checkingOut = true;
-    const label = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "Opening checkout…";
-    $("sub-error").textContent = "";
-    try {
-    await startCheckout(db, currentUser.uid);
-    } catch (err) {
-    console.error(err);
-    $("sub-error").textContent = err.message || "Couldn't open checkout. Please try again.";
-    if (btn.id === "banner-action") $("expiry-banner-text").textContent = err.message || "Couldn't open checkout.";
-    btn.disabled = false;
-    btn.textContent = label;
-    checkingOut = false;
-    }
-}
 function planDates() {
     const start =
     toDate(profile.subscription && profile.subscription.startedAt) ||
@@ -135,7 +123,6 @@ function daysText(n) {
 
 function renderPlan() {
     if (renderOrganisationView()) return;
-    if (isPending()) { renderPending(); return; }
     const key = planKey();
     const plan = PLANS[key];
     const { start, end, daysLeft, usedPct } = planDates();
@@ -144,11 +131,7 @@ function renderPlan() {
 
     // Overview cards
     $("ov-plan").textContent = plan.name;
-    $("ov-plan-note").textContent = plan.price;
     $("ov-days").textContent = daysText(daysLeft);
-    $("ov-days-note").textContent = expired
-    ? (key === "student" ? "Ended " : "Expired ") + fmtDate(end)
-    : (key === "student" ? "Free access ends " : "Renews ") + fmtDate(end);
 
     // Warning banner
     const banner = $("expiry-banner");
@@ -201,58 +184,26 @@ function renderPlan() {
             "but you can still log in to this dashboard.";
     }
 
-    const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
-    $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
+    renderFeatures(key);
 }
 
-function renderPending() {
-    const plan = PLANS.organisation;
-    $("ov-plan").textContent = plan.name;
-    $("ov-plan-note").textContent = "Payment pending";
-    $("ov-days").textContent = "–";
-    $("ov-days-note").textContent = "Starts once payment is complete";
-
-    const banner = $("expiry-banner");
-    // Just back from paying: the "activating" notice covers it, so don't also ask them to pay
-    banner.hidden = checkoutResult === "success";
-    banner.className = "banner warn";
-    $("expiry-banner-text").textContent = "Your Organisation plan isn't active yet. Complete your payment to activate it.";
-    const bannerBtn = $("banner-action");
-    bannerBtn.textContent = "Complete payment";
-    bannerBtn.onclick = () => goToCheckout(bannerBtn);
-
-    $("sub-name").textContent = plan.name;
-    $("sub-price").textContent = plan.price;
-    const badge = $("sub-badge");
-    badge.textContent = "Payment pending";
-    badge.className = "badge warn";
-    $("sub-bar").style.width = "0%";
-    $("sub-start").textContent = "";
-    $("sub-end").textContent = "";
-    $("sub-message").textContent = "You chose the Organisation plan when you signed up. Complete your payment to activate it. Until then, your account works like a Student account.";
-    const action = $("sub-action");
-    action.hidden = false;
-    action.textContent = "Complete payment";
-    action.onclick = () => goToCheckout(action);
-
-    const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
-    $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
+function renderFeatures(key) {
+    $("sub-features").innerHTML = FEATURES[key].map((f) => "<li>" + TICK + "<span>" + esc(f) + "</span></li>").join("");
 }
 
 /* ===== Organisation subscription: cancel, keep and renew (same rules as the BioAudit app) =====
-    *
-    * One yearly subscription covers the whole organisation, and the BioAudit server (the
-    * same one the desktop app uses) decides its state:
-    *   active     paid and set to renew automatically each year
-    *   cancelling cancelled; everyone keeps access until the end of the paid year
-    *   ended      the paid year is over; the admin and every member are suspended
-    *   unpaid     signed up in the app but not paid yet
-    *   none       not billed (an organisation from before billing)
-    *
-    * This only adds to the plan view above. renderPlan() hands over to renderOrganisation()
-    * when the server reports one of the first four states; in every other case the original
-    * code below runs exactly as before.
-    */
+ *
+ * One yearly subscription covers the whole organisation, and the BioAudit server (the
+ * same one the desktop app uses) decides its state:
+ *   active     paid and set to renew automatically each year
+ *   cancelling cancelled; everyone keeps access until the end of the paid year
+ *   ended      the paid year is over; the admin and every member are suspended
+ *   unpaid     signed up in the app but not paid yet
+ *   none       not billed (an organisation from before billing)
+ *
+ * renderPlan() hands over to renderOrganisation() for the first four states.
+ * Otherwise the plain Student / Organisation view above is used.
+ */
 let org = null;            // the user's organisation from the BioAudit server, with its subscription state
 let orgFor = null;         // which organisation id `org` was loaded for
 let orgLoadFailed = false; // the server couldn't be reached, so the page falls back to the account record
@@ -302,19 +253,7 @@ function renderOrganisation() {
 
     // Overview cards
     $("ov-plan").textContent = plan.name;
-    $("ov-plan-note").textContent = {
-    active: "Renews automatically each year",
-    cancelling: "Will not renew",
-    ended: "Suspended",
-    unpaid: "Payment needed"
-    }[s.state];
     $("ov-days").textContent = live && daysLeft > 0 ? daysText(daysLeft) : (s.state === "ended" ? "Ended" : "–");
-    $("ov-days-note").textContent = {
-    active: "Renews " + when,
-    cancelling: "Access ends " + when,
-    ended: endPassed ? "Ended " + when : "Subscription ended",
-    unpaid: "Starts once payment is complete"
-    }[s.state];
 
     // Banner
     const banner = $("expiry-banner");
@@ -399,8 +338,7 @@ function renderOrganisation() {
     "It renews and is charged automatically each year until it is cancelled. Cancelling keeps everyone's access until the end of the " +
     "paid year; after that, all accounts in the organisation are suspended until the subscription is renewed. Only admins can cancel.";
 
-    const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>';
-    $("sub-features").innerHTML = FEATURES.map((f) => "<li>" + tick + "<span>" + esc(f) + "</span></li>").join("");
+    renderFeatures("organisation");
 }
 
 /* ----- Actions (calling the BioAudit server, like the app does) ----- */
@@ -513,35 +451,23 @@ function renderProfile() {
     $("who").textContent = currentUser.email || "";
     $("ac-name").textContent = name || "–";
     $("ac-email").textContent = currentUser.email || profile.email || "–";
-    $("ac-plan").textContent = isPending() ? "Organisation (payment pending)" : PLANS[planKey()].name;
+    // Admins manage the team and do not scan, so the scan cards are for students and members
+    document.querySelectorAll(".member-only").forEach((el) => { el.hidden = isOrgAdmin(); });
+    $("ac-plan").textContent = PLANS[planKey()].name;
     $("ac-since").textContent = fmtDate(toDate(profile.createdAt) || new Date(currentUser.metadata.creationTime));
-    if (profile.organisationName) {
+    // The server's copy of the name when it loaded, otherwise the one on the account record
+    const orgName = (org && org.name) || profile.organisationName;
+    if (orgName) {
     $("ac-org-wrap").hidden = false;
-    $("ac-org").textContent = profile.organisationName;
-    }
-    if (profile.organisationId) {
-    loadOrganisationName(profile.organisationId);
+    $("ac-org").textContent = orgName;
     }
 }
-/* Reads the organisation's name from organisations/{id}, for accounts made in the app */
-async function loadOrganisationName(orgId) {
-    try {
-    const snap = await getDoc(doc(db, "organisations", orgId));
-    const name = snap.exists() ? snap.data().name : "";
-    if (name) {
-        $("ac-org-wrap").hidden = false;
-        $("ac-org").textContent = name;
-    }
-    } catch (err) {
-    console.error("Could not load organisation:", err);
-    }
-}    
 
 /* ===== Reports ===== */
 function severityChips(counts) {
     const c = counts || {};
-    const parts = SEVERITIES.filter((s) => c[s] > 0)
-    .map((s) => '<span class="chip"><i style="background: var(--' + s + ')"></i>' + c[s] + " " + s + "</span>");
+    const parts = SEVERITIES.filter((s) => Number(c[s]) > 0)
+    .map((s) => '<span class="chip"><i style="background: var(--' + s + ')"></i>' + Number(c[s]) + " " + s + "</span>");
     return parts.length ? '<div class="chips">' + parts.join("") + "</div>" : '<span class="muted">No issues found</span>';
 }
 function appName(s) {
@@ -552,9 +478,12 @@ function scanType(s) {
     return s.type === "device" ? "Device test" : s.type === "apk" ? "APK scan" : cap(s.type || "Scan");
 }
 
+// The scans shown in the Reports table: the members' for an admin, otherwise your own
+const tableScans = () => (isOrgAdmin() ? memberScans : scans);
+
 function renderScans() {
     const admin = isOrgAdmin();
-    const list = admin ? memberScans : scans;
+    const list = tableScans();
     const rows = $("scan-rows");
     $("th-member").hidden = !admin;
     const cols = admin ? 6 : 5;
@@ -582,24 +511,21 @@ function renderScans() {
 
     // Overview numbers
     $("ov-scans").textContent = String(scans.length);
-    $("ov-scans-note").textContent = scans.length === 1 ? "1 scan in your history" : scans.length + " scans in your history";
     const latest = scans[0];
     if (latest) {
     $("ov-latest").textContent = appName(latest);
-    $("ov-latest-note").textContent = fmtDateTime(toDate(latest.createdAt));
     $("ov-latest-findings").innerHTML = severityChips(latest.counts) +
         '<p style="margin-top: 14px"><button class="btn btn-ghost btn-small" type="button" id="ov-open-latest">Open this report</button></p>';
-    $("ov-open-latest").addEventListener("click", () => { showTab("reports"); openScan(0); });
+    $("ov-open-latest").addEventListener("click", () => { showTab("reports"); openScan(scans, 0); });
     } else {
     $("ov-latest").textContent = "None yet";
-    $("ov-latest-note").textContent = "Run a scan in the app";
     $("ov-latest-findings").innerHTML = '<p class="muted" style="font-size: 0.9rem">Your latest scan will show here once you run one.</p>';
     }
 }
 
 $("scan-rows").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-view]");
-    if (btn) openScan(Number(btn.dataset.view));
+    if (btn) openScan(tableScans(), Number(btn.dataset.view));
 });
 
 function findingsHtml(findings) {
@@ -617,11 +543,12 @@ function findingsHtml(findings) {
     }).join("");
 }
 
-async function openScan(i) {
-    const list = isOrgAdmin() ? memberScans : scans;
+/* Shows scan number `i` of `list` (the Reports table's list, or your own scans). */
+async function openScan(list, i) {
     let s = list[i];
     if (!s) return;
-    document.querySelectorAll("#scan-rows tr").forEach((tr) => tr.classList.toggle("selected", tr.dataset.i === String(i)));
+    const inTable = list === tableScans();
+    document.querySelectorAll("#scan-rows tr").forEach((tr) => tr.classList.toggle("selected", inTable && tr.dataset.i === String(i)));
     const box = $("scan-detail");
     box.hidden = false;
     // A member's scan arrives as a summary. Fetch the full scan, with its findings, before showing it.
@@ -643,7 +570,7 @@ async function openScan(i) {
         '<button class="btn btn-small" type="button" id="print-report">Save as PDF</button>' +
     "</div>" +
     '<div class="meta">' +
-        "<div><span>Findings</span>" + (s.findingCount ?? (s.findings || []).length) + "</div>" +
+        "<div><span>Findings</span>" + (Number(s.findingCount ?? (s.findings || []).length) || 0) + "</div>" +
         "<div><span>App version</span>" + esc(scope.appVersion || "–") + "</div>" +
         "<div><span>Device</span>" + esc(scope.deviceModel || "–") + "</div>" +
         "<div><span>Android version</span>" + esc(scope.androidVersion || "–") + "</div>" +
@@ -670,7 +597,7 @@ function printReport(s) {
     "<style>body{font-family:Consolas,monospace;color:#111;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.5}" +
     "h1{font-weight:500}h3{margin:28px 0 6px}section{border-top:1px solid #ccc;padding-top:6px}" +
     "pre{background:#f4f4f4;padding:10px;white-space:pre-wrap;word-break:break-word;font-size:12px}" +
-    "table{border-collapse:collapse}td{padding:3px 16px 3px 0}</style></he" + "ad><bo" + "dy>" +
+    "table{border-collapse:collapse}td{padding:3px 16px 3px 0}</style></head><body>" +
     "<h1>BioAudit scan report</h1>" +
     "<table>" +
         "<tr><td><b>App</b></td><td>" + esc(appName(s)) + "</td></tr>" +
@@ -678,17 +605,15 @@ function printReport(s) {
         "<tr><td><b>Date</b></td><td>" + esc(fmtDateTime(toDate(s.createdAt))) + "</td></tr>" +
         "<tr><td><b>App version</b></td><td>" + esc(scope.appVersion || "-") + "</td></tr>" +
         "<tr><td><b>Device</b></td><td>" + esc(scope.deviceModel || "-") + "</td></tr>" +
-        "<tr><td><b>Findings</b></td><td>" + SEVERITIES.map((k) => (s.counts && s.counts[k] ? s.counts[k] : 0) + " " + k).join(", ") + "</td></tr>" +
-    "</table>" + rows + "</bo" + "dy></ht" + "ml>"; // split so dev servers don't inject code here
+        "<tr><td><b>Findings</b></td><td>" + SEVERITIES.map((k) => (Number(s.counts && s.counts[k]) || 0) + " " + k).join(", ") + "</td></tr>" +
+    "</table>" + rows + "</body></html>";
     const w = window.open("", "_blank");
     if (!w) { alert("Allow pop-ups for this site to save the report."); return; }
     w.document.open();
     w.document.write(html);
     w.document.close();
-    // Print from here rather than from inside the new page, so this file never
-    // contains a closing script tag inside the script (that breaks the whole page)
     w.focus();
-    setTimeout(() => w.print(), 300);
+    setTimeout(() => w.print(), 300);   // short wait so the new page has laid out
 }
 
 /* Admins: the scans of every member, with their names. The server records each of these reads. */
@@ -747,7 +672,6 @@ $("signout-btn").addEventListener("click", async () => {
 });
 
 /* ===== Message after returning from Stripe ===== */
-const checkoutResult = new URLSearchParams(location.search).get("checkout");
 function showCheckoutNotice() {
     const box = $("notice");
     if (checkoutResult === "success") {
@@ -764,7 +688,6 @@ function showCheckoutNotice() {
 }
 
 /* ===== Start ===== */
-let started = false;
 onAuthStateChanged(auth, (user) => {
     if (!user) {
     window.location.href = "login.html";
@@ -792,5 +715,6 @@ onAuthStateChanged(auth, (user) => {
     }
     }, (err) => {
     console.error("Could not load profile:", err);
+    if (!started) $("loading").textContent = "Couldn't load your dashboard. Please refresh the page.";
     });
 });

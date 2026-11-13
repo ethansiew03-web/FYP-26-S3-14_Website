@@ -11,40 +11,9 @@
  * Requests carry the signed-in user's Firebase ID token, which is what the backend
  * checks.
  */
+import { api } from "./api.js";
 
-export class BillingError extends Error {}
-
-function apiBase() {
-  const base = (window.bioauditApi && window.bioauditApi.base || "").trim().replace(/\/+$/, "");
-  if (!base) {
-    throw new BillingError("Managing the subscription from the website isn't set up yet. Use the BioAudit app for now.");
-  }
-  return base;
-}
-
-async function call(user, method, path, body) {
-  const base = apiBase();
-  let response;
-  try {
-    response = await fetch(base + path, {
-      method,
-      headers: {
-        "Accept": "application/json",
-        "Authorization": "Bearer " + (await user.getIdToken()),
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {})
-      },
-      body: body !== undefined ? JSON.stringify(body) : undefined
-    });
-  } catch (err) {
-    console.error("BioAudit server unreachable:", err);
-    throw new BillingError("Couldn't reach the BioAudit server. Please try again shortly.");
-  }
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new BillingError((data.error && data.error.message) || "Something went wrong. Please try again.");
-  }
-  return data;
-}
+const call = (user, method, path, body) => api(method, path, body, user);
 
 /*
  * The caller's own organisation, or null if they have none:

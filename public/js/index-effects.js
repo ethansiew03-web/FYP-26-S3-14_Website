@@ -33,7 +33,7 @@
     S.planet = smooth(H * 0.85, H * 0.25, heroBottom) * (1 - smooth(H * 1.0, H * 0.55, ctaTop));
 
     // Rise: 0 -> 1 across the whole stretch the planet is on screen
-    const total = (window.scrollY + ctaTop - H * 0.55) - (window.scrollY + heroBottom - H * 0.25);
+    const total = (ctaTop - H * 0.55) - (heroBottom - H * 0.25);
     S.rise = smooth(0, 1, clamp01((H * 0.25 - heroBottom) / Math.max(1, total)));
   }
 

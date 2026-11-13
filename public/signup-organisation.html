@@ -73,6 +73,7 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { api } from "./js/api.js";
     import { startCheckout } from "./js/checkout.js";
     import { passwordProblem } from "./js/password-policy.js";
 
@@ -94,32 +95,6 @@
     let watchToken = 0;     // changes on every send, so an old watcher stops itself
     let cooldownTimer = null;
 
-    /* ===== Talking to the BioAudit backend (address set in js/api-config.js) ===== */
-    async function api(method, path, body) {
-      const base = (window.bioauditApi && window.bioauditApi.base || "").trim().replace(/\/+$/, "");
-      if (!base) throw new Error("The BioAudit server address isn't set up. Please contact the team.");
-      let response;
-      try {
-        response = await fetch(base + path, {
-          method,
-          headers: body !== undefined ? { "Content-Type": "application/json" } : {},
-          body: body !== undefined ? JSON.stringify(body) : undefined
-        });
-      } catch (err) {
-        console.error("BioAudit server unreachable:", err);
-        throw new Error("Couldn't reach the BioAudit server. Please try again shortly.");
-      }
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const e = data.error || {};
-        const details = (e.details || []).map((d) => d.field + ": " + d.message).join(". ");
-        const error = new Error([e.message, details].filter(Boolean).join(" ") || "Something went wrong. Please try again.");
-        error.status = response.status;
-        throw error;
-      }
-      return data;
-    }
-
     function show(text, ok = false) {
       messageEl.textContent = text;
       messageEl.className = ok ? "ok" : "";
@@ -130,22 +105,21 @@
 
     /* ===== Changing the email invalidates a code already sent ===== */
     function resetCode() {
+      const hadCode = sentTo !== null;
       watchToken++;
       sentTo = null;
       sendId = null;
       $("code-section").hidden = true;
       $("code").value = "";
       createBtn.disabled = true;
-    }
-
-    $("email").addEventListener("input", () => {
-      if (sentTo && cleanEmail() !== sentTo) {
+      if (hadCode) {   // let them request a new code straight away
         clearInterval(cooldownTimer);
         sendBtn.disabled = false;
         sendBtn.textContent = "Send code";
-        resetCode();
       }
-    });
+    }
+
+    $("email").addEventListener("input", () => { if (sentTo && cleanEmail() !== sentTo) resetCode(); });
 
     // Keep only the digits, at most six, so a pasted "1 2 3 4 5 6" still works
     $("code").addEventListener("input", (e) => {
@@ -182,9 +156,6 @@
           const result = await api("POST", "/auth/register/code-status", { email, sendId: id });
           if (result.status === "bounced") {
             resetCode();
-            clearInterval(cooldownTimer);
-            sendBtn.disabled = false;
-            sendBtn.textContent = "Send code";
             show(result.message || (email + " could not receive the code. Check the address and try again."));
             return;
           }
@@ -227,7 +198,7 @@
       const email = cleanEmail();
       const password = $("password").value;
       const organisationName = $("organisationName").value.trim();
-      const code = $("code").value.replace(/\D/g, "").slice(0, 6);
+      const code = $("code").value;
 
       if (!fullName) return show("Enter your name.");
       if (!sentTo || sentTo !== email) return show("Send a code to this email address first.");

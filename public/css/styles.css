@@ -1,7 +1,6 @@
-/* styles.css - one stylesheet for about, index, learn-more and plans.
+/* styles.css - shared by every page except login, sign-up forms, dashboard and terms.
    Part 1 = shared by every page. Parts 2-5 = page-specific rules.
-   Rules that clash between pages are scoped with a class on <html>
-    */
+   Rules that clash between pages are scoped with a class on <html>. */
 
 /* ===== Colours (same on every page) ===== */
 :root {
@@ -148,7 +147,7 @@ footer ul a {
 
 .mailing { align-self: center; }
 
-.mailing h2 { font-weight: 500; font-size: clamp(1.8rem, 3vw, 1.5rem); }
+.mailing h2 { font-weight: 500; font-size: 1.8rem; }
 
 .mailing > p { margin-top: 32px; font-size: 1rem; }
 
@@ -322,10 +321,6 @@ footer ul a {
 /* =====================================================
    PART 4 - plans.html (<html class="page-plans">)
    ===================================================== */
-.page-plans {
-  --white: #fff;
-}
-
 /* footer tweaks for this page */
 .page-plans footer { padding-bottom: 48px; }
 .page-plans .contact { margin-top: 12px; }
@@ -423,7 +418,7 @@ border-bottom: 2px solid var(--white);
 
 /* =====================================================
    PART 5 - guide.html (<html class="page-guide">)
-  ===================================================== */
+   ===================================================== */
 .page-guide { scroll-behavior: smooth; }
 .page-guide body { background: var(--navy); }
 
@@ -448,13 +443,6 @@ border-bottom: 2px solid var(--white);
   font-weight: 400;
   font-size: clamp(2.6rem, 4.5vw, 4.2rem);
   line-height: 1.05;
-}
-.guide-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 70ch) minmax(0, 1fr);
-  gap: 32px;
-  margin-top: 92px;
-  align-items: start;
 }
 .guide-intro { margin-top: 16px; text-align: center; font-size: 1.2rem; }
 
