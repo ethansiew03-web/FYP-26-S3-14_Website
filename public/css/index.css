@@ -118,13 +118,6 @@ h2 { font-weight: 300; }
   border: 0;
 }
 
-.video-placeholder {
-  display: grid;
-  place-items: center;
-  height: 100%;
-  color: var(--soft);
-}
-
 @media (max-width: 900px) {
   .hero-grid { grid-template-columns: 1fr; }
   .hero-main { text-align: center; }
