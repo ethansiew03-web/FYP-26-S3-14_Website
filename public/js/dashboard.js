@@ -28,7 +28,7 @@ const db = getFirestore(app);
 /* ===== Settings ===== */
 const STUDENT_LENGTH_MONTHS = 36; // students get 3 years free, count starting from their signup date
 const PLAN_LENGTH_MONTHS = 12; // organisation plan lasts for a year before auto renewal
-const WARN_DAYS = 30; // tells users they have 30 days before renewl/suspension
+const WARN_DAYS = 30; // tells users they have 30 days before renewal/suspension
 const PLANS = {
   student: { name: "Student", price: "$0, valid for 3 years" },
   organisation: { name: "Organisation", price: "$34.99/year" },
@@ -462,6 +462,7 @@ function syncOrganisation() {
   orgFor = profile.organisationId || null;
   refreshOrg();
 }
+// If an admin cancels or renews in the app, refresh when they come back to this tab
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && started) refreshOrg();
 });
@@ -503,7 +504,7 @@ function scanType(s) {
   return s.type === "device" ? "Device test" : s.type === "apk" ? "APK scan" : cap(s.type || "Scan");
 }
 
-// Reports table: an admin sees their members' scans, while members and students sees their own scans
+// Reports table: an admin sees their members' scans, while members and students see their own scans
 const tableScans = () => (isOrgAdmin() ? memberScans : scans);
 // Draws the Reports table from tableScans(), with loading and empty messages
 function renderScans() {

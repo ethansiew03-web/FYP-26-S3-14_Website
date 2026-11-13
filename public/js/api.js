@@ -1,6 +1,6 @@
 /*
  * Shared helper for calling the BioAudit backend. The address is set in js/api-config.js.
- * Passes a signed in Firebase user as the last argument to send their ID token.
+ * Pass a signed in Firebase user as the last argument to send their ID token.
  */
 
 export class ApiError extends Error {

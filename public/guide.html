@@ -204,7 +204,7 @@
     );
   }
 
-// Highlight the tab of the section the user is currently reading as they scroll
+  // Highlight the tab of the section the user is currently reading as they scroll
   const guideObserver = new IntersectionObserver((entries) => {
     entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); });
   }, { rootMargin: "-30% 0px -60% 0px" });

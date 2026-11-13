@@ -169,7 +169,7 @@
     }
 
     // The server only finds out an address does not exist once the mail server answers, a few
-    // seconds after the code is sent.  So we ask every few seconds for a couple of minutes.
+    // seconds after the code is sent. So we ask every few seconds for a couple of minutes.
     async function watchForBounce(email, id, token) {
       const stopAt = Date.now() + BOUNCE_WATCH_MS;
       while (Date.now() < stopAt && token === watchToken) {

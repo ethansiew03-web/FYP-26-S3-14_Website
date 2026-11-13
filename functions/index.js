@@ -19,7 +19,7 @@ const { getAuth } = require("firebase-admin/auth");
 initializeApp();
 const db = getFirestore();
 
-// The only status that means the customer has paid.
+// Only "active" counts as paid. Other Stripe statuses (past_due, canceled...) don't unlock the plan.
 const PAID_STATUS = "active";
 
 exports.syncSubscriptionTier = onDocumentWritten(

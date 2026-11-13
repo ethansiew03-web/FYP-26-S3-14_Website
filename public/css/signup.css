@@ -134,7 +134,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   min-height: 1.2em;
   font-size: 0.85rem;
   color: var(--red);
-  line-height: 1.5; 
+  line-height: 1.5;
 }
 #message.ok { color: var(--good); }
 

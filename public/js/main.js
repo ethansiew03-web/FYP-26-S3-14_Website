@@ -151,7 +151,7 @@ document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
   layout();
 
-  // Visitors with "reduced motion" turned on in their systems get a still picture instead of an animation
+  // Visitors with "reduced motion" turned on in their system settings get a still picture instead of an animation
   if (reduceMotion) {
     const still = () => draw(0, 0);
     if (scene) window.addEventListener("scroll", still, { passive: true });
