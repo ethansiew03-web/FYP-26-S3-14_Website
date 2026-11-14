@@ -286,6 +286,11 @@
     const confirmPassword = document.getElementById("confirm-password");
     const resetBtn        = document.getElementById("reset-btn");
     const resetMessage    = document.getElementById("reset-message");
+    // Shows a message under the reset form: red for errors, green when ok is true
+    function showResetMessage(text, ok = false) {
+      resetMessage.textContent = text;
+      resetMessage.classList.toggle("ok", ok);
+    }
     let cooldownTimer = null;
 
     // Switch between the log in form and the reset form
@@ -326,20 +331,18 @@
 
     // Email the code
     async function sendCode() {
-      resetMessage.classList.remove("ok");
       const email = resetEmail.value.trim().toLowerCase();
-      if (!email) { resetMessage.textContent = "Please enter email"; return; }
+      if (!email) { showResetMessage("Please enter email"); return; }
       if (sendCodeBtn.disabled) return;          // already sending, or still counting down
       sendCodeBtn.disabled = true;
-      resetMessage.textContent = "Sending…";
+      showResetMessage("Sending…", true);
       try {
         const data = await api("POST", "/auth/password-reset/send-code", { email });
-        resetMessage.textContent = data.message;
-        resetMessage.classList.add("ok");
+        showResetMessage(data.message, true);
         resetFields.hidden = false;
         startCooldown();
       } catch (err) {
-        resetMessage.textContent = err.message;
+        showResetMessage(err.message);
         sendCodeBtn.disabled = false;
       }
     }
@@ -348,14 +351,13 @@
     // Code + new password
     resetSection.addEventListener("submit", async (e) => {
       e.preventDefault();
-      resetMessage.classList.remove("ok");
       const email = resetEmail.value.trim().toLowerCase();
 
       if (resetFields.hidden) return;
-      if (!/^\d{6}$/.test(resetCode.value)) { resetMessage.textContent = "Enter the six-digit code from the email."; return; }
+      if (!/^\d{6}$/.test(resetCode.value)) { showResetMessage("Enter the six-digit code from the email."); return; }
       const problem = passwordProblem(newPassword.value);
-      if (problem) { resetMessage.textContent = problem; return; }
-      if (newPassword.value !== confirmPassword.value) { resetMessage.textContent = "The passwords do not match."; return; }
+      if (problem) { showResetMessage(problem); return; }
+      if (newPassword.value !== confirmPassword.value) { showResetMessage("The passwords do not match."); return; }
 
       resetBtn.disabled = true;
       try {
@@ -373,7 +375,7 @@
         messageEl.textContent = "Your password has been reset. Log in with your new password.";
         messageEl.classList.add("ok");
       } catch (err) {
-        resetMessage.textContent = err.message;
+        showResetMessage(err.message);
       } finally {
         resetBtn.disabled = false;
       }
