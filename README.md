@@ -15,8 +15,8 @@ The website for **BioAudit**, an Android biometric authentication security testi
 - **Plans page:** compares the free Student plan and the paid Organisation plan.
 - **Student signup:** free. A student picks their university and enters a university email address. We email a six-digit code to confirm the address exists and belongs to that university before the account is created.
 - **Organisation signup:** paid through Stripe Checkout. Only admins purchase for the organisation; members join through an invite in the app.
-- **Login and dashboard:** shows the user's plan and gives access to the app download.
-- **Info pages:** home, about, learn more, and terms.
+- **Login and dashboard:** sign in (with password reset by email code), see your plan and time left, download the app and view your scan reports. Organisation admins can see their members' reports and cancel or renew the subscription.
+- **Info pages:** home, about, learn more, guide and terms.
 
 ## Built with
 
@@ -30,7 +30,7 @@ The website for **BioAudit**, an Android biometric authentication security testi
 
 ```
 public/      The website pages, scripts, styles and images
-functions/   Cloud Functions (keeps a user's plan in sync with their subscription)
+functions/   Cloud Functions (links an account to its organisation after a Stripe payment)
 firebase.json   Firebase Hosting and Functions configuration
 ```
 
