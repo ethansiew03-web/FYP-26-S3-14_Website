@@ -95,9 +95,9 @@ function showTab(name) {
 tabs.forEach((t) => $("tab-" + t).addEventListener("click", () => showTab(t)));
 
 /* ===== Plan and time left ===== */
+// The tier is not stored. Anyone who belongs to an organisation is on the Organisation plan.
 function planKey() {
-  const tier = (profile.tier || "").toLowerCase();
-  return tier === "organisation" || tier === "premium" ? "organisation" : "student";
+  return profile.organisationId ? "organisation" : "student";
 }
 function planDates() {
   const start =

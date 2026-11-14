@@ -1,11 +1,12 @@
 /**
- * Switches a BioAudit account to the paid tier when its Stripe subscription becomes active.
+ * Links a BioAudit account to its organisation when a Stripe subscription becomes active.
  *
  * The "Run Payments with Stripe" extension saves each subscription under
- * customers/{uid}/subscriptions/{id}. This function watches those records and
- * updates users/{uid} the same way the backend's own setTier() does: the tier and
- * subscription fields on the user record, plus the tier claim on their sign-in
- * account, which the desktop app's backend also checks.
+ * customers/{uid}/subscriptions/{id}. This function watches those records. On a first
+ * payment it creates the organisation and makes the payer its admin, the same way the
+ * backend's register-admin does. It then copies the role and organisation onto the user
+ * record and their sign-in account. The backend works out the tier from the organisation,
+ * so no tier is stored anywhere.
  *
  * Only Stripe (through the extension) can write subscription records, so the
  * browser can never upgrade an account by itself.
@@ -32,7 +33,7 @@ exports.syncSubscriptionTier = onDocumentWritten(
     const after = event.data && event.data.after.exists ? event.data.after.data() : null;
     const status = after ? after.status : "canceled"; // a deleted record counts as ended
 
-    // An account also keeps its tier after the paid year is over.
+    // This function never removes anyone from an organisation, even after the paid year ends.
     if (status !== PAID_STATUS) {
       logger.info(`Subscription for ${uid} is "${status}"; no change`);
       return;
@@ -53,7 +54,6 @@ exports.syncSubscriptionTier = onDocumentWritten(
       const user = snap.data();
 
       const update = {
-        tier: "premium",
         subscription: { status: "active", startedAt: start, cancelledAt: null },
         updatedAt: FieldValue.serverTimestamp()
       };
@@ -87,8 +87,8 @@ exports.syncSubscriptionTier = onDocumentWritten(
     }
 
     // Update the sign-in claims to match, as the backend's setClaims() does
-    await getAuth().setCustomUserClaims(uid, { tier: "premium", role: result.role, organisationId: result.orgId });
+    await getAuth().setCustomUserClaims(uid, { role: result.role, organisationId: result.orgId });
 
-    logger.info(`Set ${uid} to premium, role ${result.role}, organisation ${result.orgId}`);
+    logger.info(`Linked ${uid} to organisation ${result.orgId} as ${result.role}`);
   }
 );
