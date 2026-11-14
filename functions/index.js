@@ -23,6 +23,7 @@ const db = getFirestore();
 // Only "active" counts as paid. Other Stripe statuses (past_due, canceled...) don't unlock the plan.
 const PAID_STATUS = "active";
 
+// The name is kept from when this set a tier. Renaming would make Firebase delete and redeploy the function.
 exports.syncSubscriptionTier = onDocumentWritten(
   {
     document: "customers/{uid}/subscriptions/{subscriptionId}",
